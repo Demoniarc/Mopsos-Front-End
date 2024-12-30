@@ -31,7 +31,10 @@ export default function Home() {
           .select('*')
 
         if (projectsError) throw projectsError
-        if (projectsData) setProjects(projectsData)
+        if (projectsData) {
+          console.log('Projects data:', projectsData)  // Log fetched projects data
+          setProjects(projectsData)
+        }
 
         // Fetch latest metrics
         const { data: metricsData, error: metricsError } = await supabase
@@ -40,7 +43,10 @@ export default function Home() {
           .eq('date', new Date(Date.now() - 86400000).toISOString().split('T')[0])
 
         if (metricsError) throw metricsError
-        if (metricsData) setProjectsData(metricsData)
+        if (metricsData) {
+          console.log('Metrics data:', metricsData)  // Log fetched metrics data
+          setProjectsData(metricsData)
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
       }
