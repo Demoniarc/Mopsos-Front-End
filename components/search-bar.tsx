@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { Search } from 'lucide-react'
+import { supabase } from "@/lib/supabase"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -16,17 +17,35 @@ import {
   CommandList,
 } from "@/components/ui/command"
 
-const projects = [
-  { id: "oceanprotocol", name: "Ocean Protocol", logo: "🌊" },
-  { id: "dimitra", name: "Dimitra", logo: "🌿" },
-  { id: "numerai", name: "Numerai", logo: "🧠" },
-  { id: "anyone", name: "Anyone", logo: "👥" },
-  { id: "genomes", name: "Genomes", logo: "🧬" },
-]
+interface Project {
+  id: string
+  name: string
+  logo: string
+}
 
 export function SearchBar() {
   const [open, setOpen] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('project')
+          .select('*')
+        
+        if (error) throw error
+        if (data) {
+          setProjects(data)
+        }
+      } catch (err) {
+        console.error('Error fetching projects:', err)
+      }
+    }
+
+    fetchProjects()
+  }, [])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
