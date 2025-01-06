@@ -23,6 +23,7 @@ interface Metric {
   name: string;
   key: string;
   color: string;
+  yAxisId?: string;
 }
 
 interface DataPoint {
@@ -71,13 +72,14 @@ export default function Dashboard() {
             });
           });
 
-          // Create metrics array with colors
+          // Create metrics array with colors and yAxisId
           const metricsArray = Array.from(availableMetrics).map(key => {
             const colorMapping = colorData?.find(c => c.metric === key);
             return {
               name: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
               key,
-              color: colorMapping?.color || '#000000'
+              color: colorMapping?.color || '#000000',
+              yAxisId: key === 'closing_price' || key === 'opening_price' ? 'right' : 'left'
             };
           });
 
@@ -194,11 +196,12 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={filteredData}
-                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend wrapperStyle={{ fontSize: "12px" }} />
                 {selectedMetrics.map((metricKey) => {
@@ -212,6 +215,7 @@ export default function Dashboard() {
                       name={metric?.name}
                       strokeWidth={2}
                       dot={false}
+                      yAxisId={metric?.yAxisId || "left"}
                     />
                   );
                 })}
