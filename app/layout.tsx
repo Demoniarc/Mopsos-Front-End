@@ -7,8 +7,11 @@ import Header from "@/components/header"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Analyse Sociale Crypto",
-  description: "Analysez les données sociales pour les projets de cryptomonnaie",
+  title: "Mopsos AI",
+  description: "Most advanced crypto social data.",
+  icons: {
+    icon: '/logo-dark.svg'
+  }
 }
 
 export default function RootLayout({
