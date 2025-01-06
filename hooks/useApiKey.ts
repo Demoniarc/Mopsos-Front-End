@@ -22,7 +22,7 @@ export function useApiKey(address: string | null) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to fetch API key')
+        throw new Error('')
       }
 
       const data = await response.json()
