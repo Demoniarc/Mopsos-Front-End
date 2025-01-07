@@ -37,10 +37,19 @@ export default function Home() {
         }
 
         // Fetch latest metrics
+
         const { data: metricsData, error: metricsError } = await supabase
-          .from('data')
-          .select('id, twitter_user, discord_user, telegram_user')
-          .eq('date', new Date(Date.now() - 86400000).toISOString().split('T')[0])
+          .rpc('execute_sql', {
+            query: `
+            SELECT t1.id, t1.twitter_user, t1.discord_user, t1.telegram_user
+            FROM data t1
+            JOIN (
+            SELECT id, MAX(date) AS latest_date
+            FROM data
+            GROUP BY id
+          ) t2
+          ON t1.id = t2.id AND t1.date = t2.latest_date;
+    `});
 
         if (metricsError) throw metricsError
         if (metricsData) {
