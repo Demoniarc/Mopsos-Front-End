@@ -31,6 +31,12 @@ interface DataPoint {
   [key: string]: any;
 }
 
+interface Project {
+  id: string;
+  name: string;
+  logo: string;
+}
+
 export default function Dashboard() {
   const { projectId } = useParams();
   const [historicalData, setHistoricalData] = useState<DataPoint[]>([]);
@@ -39,10 +45,23 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState("30d");
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
+  const [projectName, setProjectName] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
       try {
+        // Fetch project details
+        const { data: projectData, error: projectError } = await supabase
+          .from('project')
+          .select('name')
+          .eq('id', projectId)
+          .single();
+
+        if (projectError) throw projectError;
+        if (projectData) {
+          setProjectName(projectData.name);
+        }
+
         // Fetch historical data
         const { data: histData, error: histError } = await supabase
           .from('data')
@@ -150,7 +169,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold capitalize">{projectId} dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold capitalize">{projectName} dashboard</h1>
 
       <Card className="w-full">
         <CardHeader>
