@@ -13,6 +13,14 @@ export function useApiContract() {
       try {
         if (window.ethereum) {
           const provider = new ethers.providers.Web3Provider(window.ethereum)
+          
+          // Check if any account is connected before getting the signer
+          const accounts = await provider.listAccounts()
+          if (accounts.length === 0) {
+            setLoading(false)
+            return
+          }
+
           const signer = provider.getSigner()
           const apiContract = new ethers.Contract(
             API_CONTRACT_ADDRESS,
@@ -28,7 +36,10 @@ export function useApiContract() {
           setLoading(false)
         }
       } catch (err: any) {
-        setError(err.message)
+        // Ne pas afficher l'erreur si c'est l'erreur spécifique d'absence de compte
+        if (!err.message.includes('unknown account #0')) {
+          setError(err.message)
+        }
         setLoading(false)
       }
     }
@@ -50,7 +61,10 @@ export function useApiContract() {
       await tx.wait()
       return true
     } catch (err: any) {
-      setError(err.message)
+      // Ne pas afficher l'erreur si c'est l'erreur spécifique d'absence de compte
+      if (!err.message.includes('unknown account #0')) {
+        setError(err.message)
+      }
       return false
     }
   }
