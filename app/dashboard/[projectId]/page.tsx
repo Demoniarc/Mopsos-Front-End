@@ -37,6 +37,20 @@ interface Project {
   logo: string;
 }
 
+// Helper function to format large numbers
+const formatYAxisTick = (value: number) => {
+  if (value >= 1e9) {
+    return `${(value / 1e9).toFixed(0)}B`;
+  }
+  if (value >= 1e6) {
+    return `${(value / 1e6).toFixed(0)}M`;
+  }
+  if (value >= 1e3) {
+    return `${(value / 1e3).toFixed(0)}K`;
+  }
+  return value;
+};
+
 export default function Dashboard() {
   const { projectId } = useParams();
   const [historicalData, setHistoricalData] = useState<DataPoint[]>([]);
@@ -215,12 +229,28 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={filteredData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ 
+                  top: 5, 
+                  right: 5,
+                  left: 5,
+                  bottom: 5,
+                }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+                <YAxis 
+                  yAxisId="left" 
+                  tick={{ fontSize: 12 }} 
+                  tickFormatter={formatYAxisTick}
+                  width={45}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={formatYAxisTick}
+                  width={45}
+                />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Legend wrapperStyle={{ fontSize: "12px" }} />
                 {selectedMetrics.map((metricKey) => {
@@ -252,7 +282,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">
-                {currentData[metric.key]?.toLocaleString("fr-FR")}
+                {formatYAxisTick(currentData[metric.key])}
               </div>
               <p className="text-xs text-muted-foreground">
                 {calculateChange(currentData[metric.key], previousData[metric.key])}
