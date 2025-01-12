@@ -37,7 +37,7 @@ interface Project {
   logo: string;
 }
 
-// Helper function to format large numbers
+// Helper function to format large numbers for the chart only
 const formatYAxisTick = (value: number) => {
   if (value >= 1e9) {
     return `${(value / 1e9).toFixed(0)}B`;
@@ -282,7 +282,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-xl md:text-2xl font-bold">
-                {formatYAxisTick(currentData[metric.key])}
+                {currentData[metric.key].toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 {calculateChange(currentData[metric.key], previousData[metric.key])}
