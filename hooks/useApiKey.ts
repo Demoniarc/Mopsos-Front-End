@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react'
 const API_URL = process.env.API_URL
 const API_KEY = process.env.API_KEY
 
+console.log('API_URL:', API_URL);
+console.log('API_KEY:', API_KEY);
+
 export function useApiKey(address: string | null) {
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
