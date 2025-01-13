@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
+import Footer from "@/components/footer"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,11 +29,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          <main className="container mx-auto px-4 py-8 max-w-full overflow-x-hidden">{children}</main>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="container mx-auto px-4 py-8 max-w-full overflow-x-hidden flex-1">{children}</main>
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
