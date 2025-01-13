@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
-const API_URL = 'https://api-display.onrender.com/api_key'
-const API_KEY = 'b668705246684ade9d57f17d4f805f6be7c9ad931fd1636273404b593a93a8be'
+const API_URL = process.env.API_URL
+const API_KEY = process.env.API_KEY
 
 export function useApiKey(address: string | null) {
   const [apiKey, setApiKey] = useState<string | null>(null)
