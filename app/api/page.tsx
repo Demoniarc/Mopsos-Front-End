@@ -59,7 +59,7 @@ export default function ApiPage() {
         </CardHeader>
         <CardFooter>
           <a 
-            href="https://api.mopsos.ai/docs"
+            href="https://mopsos-ai-api.onrender.com/docs"
             target="_blank" 
             rel="noopener noreferrer"
           >
