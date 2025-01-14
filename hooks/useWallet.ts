@@ -52,7 +52,7 @@ export function useWallet() {
       
       if (!window.ethereum) {
         if (/android|iphone|ipad|ipod/i.test(navigator.userAgent)) {
-          window.location.href = 'https://metamask.app.link/dapp/your-website-url'
+          window.location.href = 'https://metamask.app.link/dapp/mopsos.ai/api'
           return
         }
         throw new Error('Please install MetaMask')
