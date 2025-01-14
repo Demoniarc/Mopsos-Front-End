@@ -156,7 +156,7 @@ export default function DocumentationPage() {
         <CardContent className="space-y-4">
           <p>
             To interact with the API, you must include a valid API key in either the query parameter api-key or the request header x-api-key. 
-            You can obtain an API key by visiting the API page.
+            You can obtain an API key by visiting our <Link href="/api">API page</Link>.
           </p>
           <p>
             If the provided API key is invalid or expired, the API will respond with an error message and a status code 401 (Unauthorized).
