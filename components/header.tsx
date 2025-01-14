@@ -49,6 +49,9 @@ export default function Header() {
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
             <div className="hidden md:flex items-center space-x-4">
+              <Link href="/dictionary" className="text-sm font-medium">
+                Data Dictionary
+              </Link>
               <Link href="/api" className="text-sm font-medium">
                 API
               </Link>
