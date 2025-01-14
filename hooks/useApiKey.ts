@@ -37,7 +37,7 @@ export function useApiKey(address: string | null) {
     }
   }
 
-  const retryFetchApiKey = async (walletAddress: string, maxAttempts = 15, delay = 1000) => {
+  const retryFetchApiKey = async (walletAddress: string, maxAttempts = 15, delay = 10000) => {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await new Promise(resolve => setTimeout(resolve, delay))
       
