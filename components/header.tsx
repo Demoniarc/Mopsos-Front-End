@@ -31,87 +31,43 @@ export default function Header() {
   }
 
   return (
-<header className="border-b">
-  <div className="container mx-auto px-4 py-4">
-    <div className="flex items-center justify-start"> {/* Changer de justify-between à justify-start */}
-      <div className="flex items-center gap-8">
-        <Link href="/" className="flex items-center space-x-4">
-          <img
-            src={theme === "dark" ? "/logo-light.svg" : "/logo-dark.svg"}
-            alt="Logo Mopsos AI"
-            className="h-8 w-8 md:h-10 md:w-10"
-          />
-          <span className="text-xl font-bold md:text-2xl">Mopsos AI</span>
-        </Link>
-        <div className="hidden md:block">
-          <SearchBar />
-        </div>
-      </div>
-      <div className="flex items-center space-x-2 md:space-x-4">
-        <div className="hidden md:flex items-center space-x-4">
-          <Link href="/api" className="text-sm font-medium">
-            API
-          </Link>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? (
-              <SunIcon className="h-5 w-5" />
-            ) : (
-              <MoonIcon className="h-5 w-5" />
-            )}
-            <span className="sr-only">Switch theme</span>
-          </Button>
-          <Button 
-            onClick={handleWalletClick}
-            variant={address ? "outline" : "default"}
-          >
-            {address ? formatAddress(address) : "Connect Wallet"}
-          </Button>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-        </div>
-        <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(true)}
-            >
-              <MenuIcon className="h-5 w-5" />
-              <span className="sr-only">Menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <div className="flex flex-col space-y-4 mt-4">
+    <header className="border-b">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
+              <Link href="/" className="flex items-center space-x-4">
+                <img
+                  src={theme === "dark" ? "/logo-light.svg" : "/logo-dark.svg"}
+                  alt="Logo Mopsos AI"
+                  className="h-8 w-8 md:h-10 md:w-10"
+                />
+                <span className="text-xl font-bold md:text-2xl">Mopsos AI</span>
+              </Link>
+            </div>
+            <div className="hidden md:block">
               <SearchBar />
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
               <Link href="/api" className="text-sm font-medium">
                 API
               </Link>
               <Button
                 variant="outline"
-                size="sm"
-                onClick={() => {
-                  setTheme(theme === "dark" ? "light" : "dark")
-                  setIsMenuOpen(false)
-                }}
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
                 {theme === "dark" ? (
-                  <SunIcon className="h-5 w-5 mr-2" />
+                  <SunIcon className="h-5 w-5" />
                 ) : (
-                  <MoonIcon className="h-5 w-5 mr-2" />
+                  <MoonIcon className="h-5 w-5" />
                 )}
-                Switch theme
+                <span className="sr-only">Switch theme</span>
               </Button>
               <Button 
-                onClick={() => {
-                  handleWalletClick()
-                  setIsMenuOpen(false)
-                }}
+                onClick={handleWalletClick}
                 variant={address ? "outline" : "default"}
               >
                 {address ? formatAddress(address) : "Connect Wallet"}
@@ -120,11 +76,57 @@ export default function Header() {
                 <p className="text-sm text-destructive">{error}</p>
               )}
             </div>
-          </SheetContent>
-        </Sheet>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="md:hidden"
+                  onClick={() => setIsMenuOpen(true)}
+                >
+                  <MenuIcon className="h-5 w-5" />
+                  <span className="sr-only">Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <div className="flex flex-col space-y-4 mt-4">
+                  <SearchBar />
+                  <Link href="/api" className="text-sm font-medium">
+                    API
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTheme(theme === "dark" ? "light" : "dark")
+                      setIsMenuOpen(false)
+                    }}
+                  >
+                    {theme === "dark" ? (
+                      <SunIcon className="h-5 w-5 mr-2" />
+                    ) : (
+                      <MoonIcon className="h-5 w-5 mr-2" />
+                    )}
+                    Switch theme
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      handleWalletClick()
+                      setIsMenuOpen(false)
+                    }}
+                    variant={address ? "outline" : "default"}
+                  >
+                    {address ? formatAddress(address) : "Connect Wallet"}
+                  </Button>
+                  {error && (
+                    <p className="text-sm text-destructive">{error}</p>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</header>
+    </header>
   )
 }
