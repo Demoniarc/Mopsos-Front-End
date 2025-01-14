@@ -22,6 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
+      <Head>
+        <link rel="icon" href="/logo-dark.svg" type="image/svg+xml" />
+      </Head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
