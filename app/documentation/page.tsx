@@ -175,14 +175,16 @@ export default function DocumentationPage() {
             code={`import requests
 
 url = "https://api.mopsos.ai/data"
+headers = {
+    "x-api-key": "your_api_key"
+}
 params = {
     "project_id": "project_1",
     "start_date": "2024-01-01",
-    "end_date": "2024-01-31",
-    "api-key": "your_api_key"
+    "end_date": "2024-01-31"
 }
 
-response = requests.get(url, params=params)
+response = requests.get(url, headers=headers, params=params)
 data = response.json()
 
 print(data)`}
