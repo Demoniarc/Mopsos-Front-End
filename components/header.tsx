@@ -35,14 +35,16 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img
-              src={theme === "dark" ? "/logo-light.svg" : "/logo-dark.svg"}
-              alt="Logo Mopsos AI"
-              className="h-8 w-8 md:h-10 md:w-10"
-            />
-            <Link href="/" className="text-xl font-bold md:text-2xl">
-              Mopsos AI
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link href="/" className="flex items-center space-x-4">
+                <img
+                  src={theme === "dark" ? "/logo-light.svg" : "/logo-dark.svg"}
+                  alt="Logo Mopsos AI"
+                  className="h-8 w-8 md:h-10 md:w-10"
+                />
+                <span className="text-xl font-bold md:text-2xl">Mopsos AI</span>
+              </Link>
+            </div>
             <div className="hidden md:block">
               <SearchBar />
             </div>
