@@ -72,15 +72,16 @@ export default function DictionaryPage() {
                 ))}
               </tbody>
             </table>
+            <CardFooter>
+              <p className="text-sm text-muted-foreground text-center">
+                Each field represents a key measure related to a project within the crypto ecosystem. 
+                These data points are regularly updated and accessible via both our Dashboards and API. 
+                If you have any questions regarding the meaning of specific fields, feel free to contact us.
+              </p>
+           </CardFooter>
           </div>
         </CardContent>
       </Card>
-      
-      <p className="text-sm text-muted-foreground text-center">
-        Each field represents a key measure related to a project within the crypto ecosystem. 
-        These data points are regularly updated and accessible via both our Dashboards and API. 
-        If you have any questions regarding the meaning of specific fields, feel free to contact us.
-      </p>
     </div>
   )
 }
