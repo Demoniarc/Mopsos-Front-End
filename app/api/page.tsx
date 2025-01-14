@@ -29,7 +29,6 @@ export default function ApiPage() {
     try {
       const success = await payForAccess(Number(months))
       if (success) {
-        // After successful payment, retry fetching the API key multiple times
         await retryFetchApiKey(address)
       }
     } catch (err) {
@@ -40,11 +39,13 @@ export default function ApiPage() {
   }
 
   const handleMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (/^\d*$/.test(value)) {
+    const value = e.target.value.trim()
+    if (value === "" || /^\d+$/.test(value)) {
       setMonths(value)
     }
   }
+
+  const isButtonDisabled = !months || isNaN(Number(months)) || Number(months) <= 0 || isProcessing || contractLoading || apiKeyLoading
 
   const totalPrice = contractLoading ? '...' : (Number(price) * Number(months || 0)).toFixed(2)
 
@@ -80,6 +81,8 @@ export default function ApiPage() {
               <Input
                 id="months"
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min="1"
                 placeholder="Enter number of months"
                 value={months}
@@ -94,7 +97,7 @@ export default function ApiPage() {
             </div>
             <Button 
               type="submit" 
-              disabled={!months || isProcessing || contractLoading || apiKeyLoading}
+              disabled={isButtonDisabled}
             >
               {!address 
                 ? "Connect wallet" 
