@@ -94,7 +94,7 @@ export default function ApiPage() {
             </div>
             <Button 
               type="submit" 
-              disabled={!months || isProcessing || contractLoading || apiKeyLoading}
+              disabled={address ? (!months || isProcessing || contractLoading || apiKeyLoading) : false}
             >
               {!address 
                 ? "Connect wallet" 
