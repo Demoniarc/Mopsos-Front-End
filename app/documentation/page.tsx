@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 interface CodeBlockProps {
   language: string
