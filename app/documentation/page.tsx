@@ -70,8 +70,10 @@ export default function DocumentationPage() {
             <p>This endpoint returns the list of project IDs available in the Mopsos AI database. You can use these IDs to query specific project data from the /data endpoint.</p>
             
             <div className="space-y-2">
-              <p className="font-medium">Request:</p>
-              <p>Headers: x-api-key or api-key (must be a valid API key)</p>
+              <p className="font-medium">Request Parameters:</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li><strong>api-key / x-api-key</strong> (query parameter or header): Your valid API key.</li>
+              </ul>
             </div>
 
             <div className="space-y-2">
