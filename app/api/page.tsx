@@ -12,27 +12,14 @@ import { useApiKey } from "@/hooks/useApiKey"
 export default function ApiPage() {
   const [months, setMonths] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   
   const { address, connectWallet } = useWallet()
   const { price, loading: contractLoading, error: contractError, payForAccess } = useApiContract()
   const { apiKey, loading: apiKeyLoading, error: apiKeyError, retryFetchApiKey } = useApiKey(address)
 
-  const validateMonths = (value: string) => {
-    const monthsNum = Number(value)
-    return value !== "" && !isNaN(monthsNum) && monthsNum > 0
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateMonths(months)) {
-      setError("Please enter a valid number of months")
-      return
-    }
-    
-    setError(null)
-
     if (!address) {
       await connectWallet()
       return
@@ -42,6 +29,7 @@ export default function ApiPage() {
     try {
       const success = await payForAccess(Number(months))
       if (success) {
+        // After successful payment, retry fetching the API key multiple times
         await retryFetchApiKey(address)
       }
     } catch (err) {
@@ -52,9 +40,10 @@ export default function ApiPage() {
   }
 
   const handleMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, '')
-    setMonths(value)
-    setError(null)
+    const value = e.target.value
+    if (/^\d*$/.test(value)) {
+      setMonths(value)
+    }
   }
 
   const totalPrice = contractLoading ? '...' : (Number(price) * Number(months || 0)).toFixed(2)
@@ -90,8 +79,8 @@ export default function ApiPage() {
               <Label htmlFor="months">Number of subscription months</Label>
               <Input
                 id="months"
-                type="text"
-                inputMode="numeric"
+                type="number"
+                min="1"
                 placeholder="Enter number of months"
                 value={months}
                 onChange={handleMonthsChange}
@@ -105,7 +94,7 @@ export default function ApiPage() {
             </div>
             <Button 
               type="submit" 
-              disabled={isProcessing || contractLoading || apiKeyLoading}
+              disabled={!months || isProcessing || contractLoading || apiKeyLoading}
             >
               {!address 
                 ? "Connect wallet" 
@@ -113,8 +102,8 @@ export default function ApiPage() {
                   ? "Transaction pending..." 
                   : "Pay and get your API key"}
             </Button>
-            {(error || contractError || apiKeyError) && (
-              <p className="text-sm text-destructive">{error || contractError || apiKeyError}</p>
+            {(contractError || apiKeyError) && (
+              <p className="text-sm text-destructive">{contractError || apiKeyError}</p>
             )}
           </form>
         </CardContent>
