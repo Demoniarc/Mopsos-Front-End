@@ -78,7 +78,7 @@ export default function DocumentationPage() {
               <p className="font-medium">Example Request:</p>
               <CodeBlock
                 language="arduino"
-                code="GET https://api.mopsos.ai/project_id"
+                code="GET https://api.mopsos.ai/project_id?api-key=your_api_key"
               />
             </div>
 
@@ -100,7 +100,7 @@ export default function DocumentationPage() {
             <div className="space-y-2">
               <p className="font-medium">Request Parameters:</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li><strong>api_key</strong> (query parameter or header): Your valid API key.</li>
+                <li><strong>api-key / x-api-key</strong> (query parameter or header): Your valid API key.</li>
                 <li><strong>project_id</strong> (required): The unique ID of the project.</li>
                 <li><strong>start_date</strong> (optional): The start date in ISO 8601 format (YYYY-MM-DD).</li>
                 <li><strong>end_date</strong> (optional): The end date in ISO 8601 format (YYYY-MM-DD).</li>
@@ -111,7 +111,7 @@ export default function DocumentationPage() {
               <p className="font-medium">Example Request:</p>
               <CodeBlock
                 language="arduino"
-                code="GET https://api.mopsos.ai/data?project_id=project_1&start_date=2024-01-01&end_date=2024-01-31&api_key=your_api_key"
+                code="GET https://api.mopsos.ai/data?project_id=project_1&start_date=2024-01-01&end_date=2024-01-31&api-key=your_api_key"
               />
             </div>
 
@@ -177,7 +177,7 @@ params = {
     "project_id": "project_1",
     "start_date": "2024-01-01",
     "end_date": "2024-01-31",
-    "api_key": "your_api_key"
+    "api-key": "your_api_key"
 }
 
 response = requests.get(url, params=params)
@@ -196,7 +196,7 @@ print(data)`}
           <p>
             If you encounter any issues or need further assistance, feel free to contact our support team via email at{" "}
             <a href="mailto:support@mopsos.ai" className="text-primary hover:underline">
-              support@mopsos.ai
+              ai.mopsos@gmail.com
             </a>
           </p>
         </CardContent>
