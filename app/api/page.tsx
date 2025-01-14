@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,21 +11,28 @@ import { useApiKey } from "@/hooks/useApiKey"
 
 export default function ApiPage() {
   const [months, setMonths] = useState("")
-  const [isValid, setIsValid] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   const { address, connectWallet } = useWallet()
   const { price, loading: contractLoading, error: contractError, payForAccess } = useApiContract()
   const { apiKey, loading: apiKeyLoading, error: apiKeyError, retryFetchApiKey } = useApiKey(address)
 
-  useEffect(() => {
-    const monthsNum = Number(months)
-    setIsValid(months !== "" && !isNaN(monthsNum) && monthsNum > 0)
-  }, [months])
+  const validateMonths = (value: string) => {
+    const monthsNum = Number(value)
+    return value !== "" && !isNaN(monthsNum) && monthsNum > 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!validateMonths(months)) {
+      setError("Please enter a valid number of months")
+      return
+    }
+    
+    setError(null)
+
     if (!address) {
       await connectWallet()
       return
@@ -47,6 +54,7 @@ export default function ApiPage() {
   const handleMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '')
     setMonths(value)
+    setError(null)
   }
 
   const totalPrice = contractLoading ? '...' : (Number(price) * Number(months || 0)).toFixed(2)
@@ -97,7 +105,7 @@ export default function ApiPage() {
             </div>
             <Button 
               type="submit" 
-              disabled={!isValid || isProcessing || contractLoading || apiKeyLoading}
+              disabled={isProcessing || contractLoading || apiKeyLoading}
             >
               {!address 
                 ? "Connect wallet" 
@@ -105,8 +113,8 @@ export default function ApiPage() {
                   ? "Transaction pending..." 
                   : "Pay and get your API key"}
             </Button>
-            {(contractError || apiKeyError) && (
-              <p className="text-sm text-destructive">{contractError || apiKeyError}</p>
+            {(error || contractError || apiKeyError) && (
+              <p className="text-sm text-destructive">{error || contractError || apiKeyError}</p>
             )}
           </form>
         </CardContent>
