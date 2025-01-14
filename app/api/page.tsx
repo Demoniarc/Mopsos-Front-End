@@ -58,7 +58,12 @@ export default function ApiPage() {
           <CardDescription>Access our comprehensive documentation for integrating the Mopsos AI API.</CardDescription>
         </CardHeader>
         <CardFooter>
-            <Button as="a" href="/documentation">See the documentation</Button>
+          <a 
+            href="https://mopsos.ai/documentation"
+            rel="noopener noreferrer"
+          >
+            <Button>See the documentation</Button>
+          </a>
         </CardFooter>
       </Card>
 
