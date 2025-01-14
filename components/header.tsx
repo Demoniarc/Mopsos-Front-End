@@ -92,6 +92,9 @@ export default function Header() {
               <SheetContent>
                 <div className="flex flex-col space-y-4 mt-4">
                   <SearchBar />
+                  <Link href="/dictionary" className="text-sm font-medium">
+                    Data Dictionary
+                  </Link>
                   <Link href="/api" className="text-sm font-medium">
                     API
                   </Link>
