@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,11 +11,17 @@ import { useApiKey } from "@/hooks/useApiKey"
 
 export default function ApiPage() {
   const [months, setMonths] = useState("")
+  const [isValid, setIsValid] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   
   const { address, connectWallet } = useWallet()
   const { price, loading: contractLoading, error: contractError, payForAccess } = useApiContract()
   const { apiKey, loading: apiKeyLoading, error: apiKeyError, retryFetchApiKey } = useApiKey(address)
+
+  useEffect(() => {
+    const monthsNum = Number(months)
+    setIsValid(months !== "" && !isNaN(monthsNum) && monthsNum > 0)
+  }, [months])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,13 +45,9 @@ export default function ApiPage() {
   }
 
   const handleMonthsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim()
-    if (value === "" || /^\d+$/.test(value)) {
-      setMonths(value)
-    }
+    const value = e.target.value.replace(/[^0-9]/g, '')
+    setMonths(value)
   }
-
-  const isButtonDisabled = !months || isNaN(Number(months)) || Number(months) <= 0 || isProcessing || contractLoading || apiKeyLoading
 
   const totalPrice = contractLoading ? '...' : (Number(price) * Number(months || 0)).toFixed(2)
 
@@ -80,10 +82,8 @@ export default function ApiPage() {
               <Label htmlFor="months">Number of subscription months</Label>
               <Input
                 id="months"
-                type="number"
+                type="text"
                 inputMode="numeric"
-                pattern="[0-9]*"
-                min="1"
                 placeholder="Enter number of months"
                 value={months}
                 onChange={handleMonthsChange}
@@ -97,7 +97,7 @@ export default function ApiPage() {
             </div>
             <Button 
               type="submit" 
-              disabled={isButtonDisabled}
+              disabled={!isValid || isProcessing || contractLoading || apiKeyLoading}
             >
               {!address 
                 ? "Connect wallet" 
