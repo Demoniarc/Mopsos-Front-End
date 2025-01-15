@@ -35,6 +35,17 @@ export default function Footer() {
                 className="h-6 w-6"
               />
             </Link>
+            <Link 
+              href="https://www.linkedin.com/company/mopsos-ai" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <img
+                src={theme === "dark" ? "/linkedin-logo-light.svg" : "/linkedin-logo-dark.svg"}
+                alt="LinkedIn"
+                className="h-6 w-6"
+              />
+            </Link>
           </div>
 
           {/* Action Buttons */}
