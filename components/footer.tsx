@@ -25,7 +25,7 @@ export default function Footer() {
               />
             </Link>
             <Link 
-              href="https://www.linkedin.com/company/mopsos-ai" 
+              href="https://discord.gg/jHxTCBcg" 
               target="_blank" 
               rel="noopener noreferrer"
             >
