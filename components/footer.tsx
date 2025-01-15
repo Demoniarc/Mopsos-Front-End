@@ -30,7 +30,7 @@ export default function Footer() {
               rel="noopener noreferrer"
             >
               <img
-                src={theme === "dark" ? "/linkedin-logo-light.svg" : "/linkedin-logo-dark.svg"}
+                src={theme === "dark" ? "/discord-logo-light.svg" : "/discord-logo-dark.svg"}
                 alt="LinkedIn"
                 className="h-6 w-6"
               />
