@@ -16,7 +16,9 @@ export default function AboutPage() {
             At Mopsos AI, we empower investors and companies with unparalleled insights into the dynamics of the crypto ecosystem. 
             By aggregating and analyzing data from multiple sources we provide both historical and real-time metrics to help you drive smarter decisions.
           </p>
-
+          <p className="text-lg leading-relaxed pt-6">
+          Mopsos AI is designed to address two critical needs:
+          </p>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <img
