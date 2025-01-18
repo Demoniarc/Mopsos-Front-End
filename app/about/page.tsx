@@ -22,7 +22,7 @@ export default function AboutPage() {
               <img
                 src={theme === "dark" ? "/investment-icon-light.svg" : "/investment-icon-dark.svg"}
                 alt="Investment Analysis Icon"
-                className="h-16 w-16"
+                className="h-10 w-10"
               />
               <div>
                 <h2 className="text-2xl font-semibold">Investment Analysis</h2>
@@ -36,7 +36,7 @@ export default function AboutPage() {
               <img
                 src={theme === "dark" ? "/community-icon-light.svg" : "/community-icon-dark.svg"}
                 alt="Community Monitoring Icon"
-                className="h-16 w-16"
+                className="h-10 w-10"
               />
               <div>
                 <h2 className="text-2xl font-semibold">Community Monitoring</h2>
