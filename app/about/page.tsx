@@ -38,7 +38,7 @@ export default function AboutPage() {
               <img
                 src={theme === "dark" ? "/community-icon-light.svg" : "/community-icon-dark.svg"}
                 alt="Community Monitoring Icon"
-                className="h-12 w-12"
+                className="h-11 w-11"
               />
               <div>
                 <h2 className="text-xl font-semibold">Community Monitoring</h2>
