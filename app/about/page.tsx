@@ -27,7 +27,7 @@ export default function AboutPage() {
                 className="h-11 w-11"
               />
               <div>
-                <h4 className="text-2xl font-semibold">Investment Analysis</h4>
+                <h2 className="text-xl font-semibold">Investment Analysis</h2>
                 <p className="text-lg">
                   Empowering investors with exclusive data insights to gain a competitive edge in the market.
                 </p>
@@ -41,7 +41,7 @@ export default function AboutPage() {
                 className="h-12 w-12"
               />
               <div>
-                <h4 className="text-2xl font-semibold">Community Monitoring</h4>
+                <h2 className="text-xl font-semibold">Community Monitoring</h2>
                 <p className="text-lg">
                   Help crypto projects track and analyze their community&apos;s activity to foster growth and engagement.
                 </p>
