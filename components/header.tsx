@@ -58,7 +58,7 @@ export default function Header() {
               <Link href="/documentation" className="text-sm font-medium">
                 Documentation
               </Link>
-              <Link href="/api" className="text-sm font-medium">
+              <Link href="/about" className="text-sm font-medium">
                 About Us
               </Link>
               <Button
@@ -107,7 +107,7 @@ export default function Header() {
                   <Link href="/documentation" className="text-sm font-medium">
                     Documentation
                   </Link>
-                  <Link href="/api" className="text-sm font-medium">
+                  <Link href="/about" className="text-sm font-medium">
                     About Us
                   </Link>
                   <Button
