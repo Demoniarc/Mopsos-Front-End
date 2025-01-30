@@ -201,7 +201,7 @@ print(data)`}
           <p>
             If you encounter any issues or need further assistance, feel free to contact our support team via our dedicated discord channel{" "}
             <Link 
-              href="https://discord.gg/kxbuMCbZRN" 
+              href="https://discord.gg/sAVWrTGHKT" 
               className="text-primary hover:underline font-medium"
               target="_blank" 
               rel="noopener noreferrer"
