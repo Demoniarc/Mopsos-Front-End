@@ -40,7 +40,7 @@ export default function DocumentationPage() {
   return (
     <div className="space-y-6 pb-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">API Documentation</h1>
+        <h1 className="text-2xl font-bold">API Documentation</h1>
         <p className="text-muted-foreground">
           Welcome to the Mopsos AI API documentation. This page provides detailed information on how to use the endpoints of our API to retrieve data for your projects. The API is designed to give you access to key metrics about the projects you are analyzing.
         </p>
