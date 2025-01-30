@@ -157,7 +157,7 @@ export default function DocumentationPage() {
         <CardContent className="space-y-4">
           <p>
             To interact with the API, you must include a valid API key in either the query parameter api-key or the request header x-api-key. 
-            You can obtain an API key by visiting our <Link href="/api">API page</Link>.
+            You can obtain an API key by visiting our <Link href="/api" className="text-primary hover:underline font-medium">API page</Link>.
           </p>
           <p>
             If the provided API key is invalid or expired, the API will respond with an error message and a status code 401 (Unauthorized).
@@ -199,10 +199,15 @@ print(data)`}
         </CardHeader>
         <CardContent>
           <p>
-            If you encounter any issues or need further assistance, feel free to contact our support team via email at{" "}
-            <a href="mailto:support@mopsos.ai" className="text-primary hover:underline">
-              ai.mopsos@gmail.com
-            </a>
+            If you encounter any issues or need further assistance, feel free to contact our support team via our dedicated discord channel{" "}
+            <Link 
+              href="https://discord.gg/kxbuMCbZRN" 
+              className="text-primary hover:underline font-medium"
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              #api-support
+            </Link>
           </p>
         </CardContent>
       </Card>
