@@ -42,9 +42,9 @@ const dataFields: DataField[] = [
 export default function DictionaryPage() {
   return (
     <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Data Dictionary</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Data Dictionary</CardTitle>
           <CardDescription>
             Explore our detailed Data Dictionary to gain a clear understanding of the data behind the projects you&apos;re analyzing. 
             This guide provides an in-depth look at each data field, its source, and its format, helping you navigate and make the most of the information available.
