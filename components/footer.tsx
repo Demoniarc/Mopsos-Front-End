@@ -25,7 +25,7 @@ export default function Footer() {
               />
             </Link>
             <Link 
-              href="https://discord.gg/jHxTCBcg" 
+              href="https://discord.gg/kxbuMCbZRN" 
               target="_blank" 
               rel="noopener noreferrer"
             >
