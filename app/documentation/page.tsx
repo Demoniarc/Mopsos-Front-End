@@ -207,7 +207,7 @@ print(data)`}
               rel="noopener noreferrer"
             >
               #api-support
-            </Link>
+            </Link>.
           </p>
         </CardContent>
       </Card>
