@@ -117,7 +117,8 @@ export default function Dashboard() {
           });
 
           setMetrics(metricsArray);
-          setSelectedMetrics(metricsArray.slice(0, 3).map(m => m.key));
+          //setSelectedMetrics(metricsArray.slice(0, 3).map(m => m.key));
+          setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
         }
       } catch (error) {
         console.error("Error while loading data:", error);
