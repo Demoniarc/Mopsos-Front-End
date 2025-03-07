@@ -42,7 +42,7 @@ const dataFields: DataField[] = [
 export default function DictionaryPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Data test Dictionary</h1>
+      <h1 className="text-2xl font-bold">Data Dictionary</h1>
       <Card>
         <CardHeader>
           <CardDescription>
