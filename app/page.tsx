@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { supabase } from "@/lib/supabase"
 
 interface Project {
   id: string
   name: string
-  logo: string
+  url: string
 }
 
 interface ProjectData {
@@ -37,7 +38,6 @@ export default function Home() {
         }
 
         // Fetch latest metrics
-
         const { data: metricsData, error: metricsError } = await supabase
           .rpc('execute_sql', {
             query: `
@@ -77,8 +77,14 @@ export default function Home() {
           <Link key={project.id} href={`/dashboard/${project.id}`}>
             <Card className="hover:bg-accent transition-colors">
               <CardHeader className="flex flex-row items-center space-x-4">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-2xl">
-                  {project.logo}
+                <div className="w-12 h-12 relative">
+                  <Image
+                    src={project.url}
+                    alt={`${project.name} logo`}
+                    fill
+                    className="object-contain"
+                    sizes="48px"
+                  />
                 </div>
                 <CardTitle>{project.name}</CardTitle>
               </CardHeader>
