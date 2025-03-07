@@ -77,12 +77,12 @@ export default function Home() {
           <Link key={project.id} href={`/dashboard/${project.id}`}>
             <Card className="hover:bg-accent transition-colors">
               <CardHeader className="flex flex-row items-center space-x-4">
-                <div className="w-12 h-12 relative">
+                <div className="w-12 h-12 relative rounded-full overflow-hidden bg-background">
                   <Image
                     src={project.url}
                     alt={`${project.name} logo`}
                     fill
-                    className="object-contain"
+                    className="object-contain p-1"
                     sizes="48px"
                   />
                 </div>
