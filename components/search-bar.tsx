@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { Search } from 'lucide-react'
+import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 
 import { cn } from "@/lib/utils"
@@ -20,7 +21,7 @@ import {
 interface Project {
   id: string
   name: string
-  logo: string
+  url: string
 }
 
 export function SearchBar() {
@@ -88,9 +89,18 @@ export function SearchBar() {
               <CommandItem
                 key={project.id}
                 onSelect={() => runCommand(() => router.push(`/dashboard/${project.id}`))}
+                className="flex items-center space-x-4"
               >
-                <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                  {project.logo}
+                <div className="w-8 h-8 relative flex items-center justify-center">
+                  <div className="w-8 h-8 relative rounded-full overflow-hidden">
+                    <Image
+                      src={project.url}
+                      alt={`${project.name} logo`}
+                      fill
+                      className="object-cover"
+                      sizes="32px"
+                    />
+                  </div>
                 </div>
                 <span>{project.name}</span>
               </CommandItem>
@@ -101,4 +111,3 @@ export function SearchBar() {
     </>
   )
 }
-
