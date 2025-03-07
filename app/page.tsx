@@ -77,14 +77,17 @@ export default function Home() {
           <Link key={project.id} href={`/dashboard/${project.id}`}>
             <Card className="hover:bg-accent transition-colors">
               <CardHeader className="flex flex-row items-center space-x-4">
-                <div className="w-12 h-12 relative rounded-full overflow-hidden bg-background">
-                  <Image
-                    src={project.url}
-                    alt={`${project.name} logo`}
-                    fill
-                    className="object-contain p-1"
-                    sizes="48px"
-                  />
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden">
+                    <Image
+                      src={project.url}
+                      alt={`${project.name} logo`}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover scale-125"
+                      sizes="48px"
+                    />
+                  </div>
                 </div>
                 <CardTitle>{project.name}</CardTitle>
               </CardHeader>
