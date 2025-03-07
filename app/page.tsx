@@ -84,7 +84,7 @@ export default function Home() {
                       alt={`${project.name} logo`}
                       width={48}
                       height={48}
-                      className="w-full h-full object-cover scale-105"
+                      className="w-full h-full object-cover scale-100"
                       sizes="48px"
                     />
                   </div>
