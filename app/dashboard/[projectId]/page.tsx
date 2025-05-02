@@ -35,6 +35,7 @@ interface Project {
   id: string;
   name: string;
   logo: string;
+  description: string;
 }
 
 // Helper function to format large numbers for the chart only
@@ -60,6 +61,7 @@ export default function Dashboard() {
   const [selectedRange, setSelectedRange] = useState("30d");
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
+  const [projectDescription, setProjectDescription] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -67,13 +69,14 @@ export default function Dashboard() {
         // Fetch project details
         const { data: projectData, error: projectError } = await supabase
           .from('project')
-          .select('name')
+          .select('name, description')
           .eq('id', projectId)
           .single();
 
         if (projectError) throw projectError;
         if (projectData) {
           setProjectName(projectData.name);
+          setProjectDescription(projectData.description);
         }
 
         // Fetch historical data
@@ -293,6 +296,16 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+         {projectDescription && (
+          <Card>
+            <CardHeader>
+              <CardTitle>About {projectName}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg leading-relaxed">{projectDescription}</p>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }
