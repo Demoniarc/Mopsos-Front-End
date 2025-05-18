@@ -12,7 +12,7 @@ Mopsos AI provides advanced insights and data for cryptocurrency projects, inclu
 
 ## Features
 
-- **Social Data**: Analyze trends from platforms like Twitter, Reddit, Telegram, and more.
+- **Social Data**: Analyze trends from platforms like Twitter, Discord, Reddit, Telegram, and more.
 - **Development Metrics**: Track GitHub activity and project updates.
 - **Trading Insights**: Get metrics such as volume, price and return.
 
