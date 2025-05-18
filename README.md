@@ -14,11 +14,11 @@ Mopsos AI provides advanced insights and data for cryptocurrency projects, inclu
 
 - **Social Data**: Analyze trends from platforms like Twitter, Reddit, Telegram, and more.
 - **Development Metrics**: Track GitHub activity and project updates.
-- **Trading Insights**: Get metrics such as volume and price forecasts.
+- **Trading Insights**: Get metrics such as volume, price and return.
 
 ## Getting Started
 
-To learn more about how to use the platform or integrate with our APIs, check out the documentation on the website.
+To learn more about how to use the platform or integrate our API, check out the documentation on the website.
 
 ---
 
