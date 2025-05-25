@@ -30,7 +30,7 @@ export default function Home() {
         const { data: projectsData, error: projectsError } = await supabase
           .from('project')
           .select('*')
-          .not('id', 'in', 'natix,oceanprotocol,propbase,stronghold,bittensor,unizen,zebec,numerai,fermion,zigchain');
+           .neq('display', 'false')
 
         if (projectsError) throw projectsError
         if (projectsData) {
