@@ -35,7 +35,7 @@ export function SearchBar() {
         const { data, error } = await supabase
           .from('project')
           .select('*')
-          .neq('id', 'fermion')
+          .neq('display', 'false')
         
         if (error) throw error
         if (data) {
