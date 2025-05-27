@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
 
 interface Metric {
   name: string;
@@ -36,6 +37,13 @@ interface Project {
   name: string;
   logo: string;
   description: string;
+}
+
+interface DiscordMessage {
+  date: string;
+  author: string;
+  avatar: string;
+  message: string;
 }
 
 // Helper function to format large numbers for the chart only
@@ -62,6 +70,7 @@ export default function Dashboard() {
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
+  const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -94,6 +103,18 @@ export default function Dashboard() {
           .select('*');
 
         if (colorError) throw colorError;
+
+        const { data: discordData, error: discordError } = await supabase
+          .from('discord_duplicate')
+          .select('date, author, avatar, content as message')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+        
+        if (discordError) throw discordError;
+        if (discordData) {
+          setDiscordMessages(discordData);
+        }
 
         if (histData) {
           setHistoricalData(histData);
