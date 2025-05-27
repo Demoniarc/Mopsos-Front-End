@@ -106,7 +106,7 @@ export default function Dashboard() {
 
         const { data: discordData, error: discordError } = await supabase
           .from('discord_duplicate')
-          .select('date, author, avatar, content as message')
+          .select('date, author, avatar, content')
           .eq('id', projectId)
           .order('date', { ascending: false })
           .limit(10);
