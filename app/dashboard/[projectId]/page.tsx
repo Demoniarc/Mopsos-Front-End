@@ -327,6 +327,39 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         )}
+            <Card>
+        <CardHeader>
+          <CardTitle>Latest Discord activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {discordMessages.length > 0 ? (
+              discordMessages.map((message, index) => (
+                <div key={index} className="flex space-x-4">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={`/discord_avatar/${message.avatar}`}
+                      alt={`${message.author}'s avatar`}
+                      className="h-10 w-10 rounded-full"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{message.author}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
+                      </span>
+                    </div>
+                    <p className="text-sm">{message.message}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground">No Discord messages available</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
