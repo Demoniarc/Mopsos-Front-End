@@ -46,6 +46,18 @@ interface DiscordMessage {
   message: string;
 }
 
+interface TwitterMessage {
+  date: string;
+  author: string;
+  author_id: string;
+  avatar: string;
+  content: string;
+  like: number;
+  retweet: number;
+  quote: number;
+  comment: number;
+}
+
 // Helper function to format large numbers for the chart only
 const formatYAxisTick = (value: number) => {
   if (value >= 1e9) {
@@ -71,6 +83,7 @@ export default function Dashboard() {
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
   const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
+  const [twitterMessages, setTwitterMessages] = useState<TwitterMessage[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -114,6 +127,18 @@ export default function Dashboard() {
         if (discordError) throw discordError;
         if (discordData) {
           setDiscordMessages(discordData);
+        }
+
+        const { data: twitterData, error: twitterError } = await supabase
+          .from('twitter')
+          .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+      
+        if (twitterError) throw twitterError;
+        if (twitterData) {
+          setTwitterMessages(twitterData);
         }
 
         if (histData) {
@@ -360,6 +385,59 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+          <CardHeader>
+            <CardTitle>Latest Twitter activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {twitterMessages.length > 0 ? (
+                twitterMessages.map((message, index) => (
+                  <div key={index} className="flex space-x-4">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={message.avatar}
+                        alt={`${message.author}'s avatar`}
+                        className="h-10 w-10 rounded-full"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium">{message.author}</span>
+                        <span className="text-sm text-muted-foreground">@{message.author_id}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-sm">{message.content}</p>
+                      <div className="flex items-center space-x-6 pt-2">
+                        <div className="flex items-center space-x-2">
+                          <img src="/comment.svg" alt="Comments" className="h-4 w-4" />
+                          <span className="text-sm text-muted-foreground">{message.comment}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <img src="/retweet.svg" alt="Retweets" className="h-4 w-4" />
+                          <span className="text-sm text-muted-foreground">{message.retweet}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <img src="/quote.svg" alt="Quotes" className="h-4 w-4" />
+                          <span className="text-sm text-muted-foreground">{message.quote}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <img src="/like.svg" alt="Likes" className="h-4 w-4" />
+                          <span className="text-sm text-muted-foreground">{message.like}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground">No Twitter messages available</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
     </div>
   );
 }
