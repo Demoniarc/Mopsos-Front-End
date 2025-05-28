@@ -405,7 +405,7 @@ export default function Dashboard() {
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center space-x-2">
                         <span className="font-medium">{message.author}</span>
-                        <span className="text-sm text-muted-foreground">@{message.author_id}</span>
+                        <span className="text-sm text-muted-foreground">{message.author_id}</span>
                         <span className="text-sm text-muted-foreground">
                           {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
                         </span>
