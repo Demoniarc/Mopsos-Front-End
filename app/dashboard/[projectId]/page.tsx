@@ -58,6 +58,14 @@ interface TwitterMessage {
   comment: number;
 }
 
+interface TelegramMessage {
+  date: string;
+  author: string;
+  username: string;
+  content: string;
+  avatar: string;
+}
+
 // Helper function to format large numbers for the chart only
 const formatYAxisTick = (value: number) => {
   if (value >= 1e9) {
@@ -84,6 +92,7 @@ export default function Dashboard() {
   const [projectDescription, setProjectDescription] = useState<string>("");
   const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
   const [twitterMessages, setTwitterMessages] = useState<TwitterMessage[]>([]);
+  const [telegramMessages, setTelegramMessages] = useState<TelegramMessage[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -139,6 +148,22 @@ export default function Dashboard() {
         if (twitterError) throw twitterError;
         if (twitterData) {
           setTwitterMessages(twitterData);
+        }
+
+        const { data: telegramData, error: telegramError } = await supabase
+          .from('telegram_duplicate')
+          .select('date, author, username, content, avatar')
+          .eq('id', projectId)
+          .eq('bot', false)
+          .not('author', 'eq', '')
+          .not('username', 'eq', '')
+          .not('content', 'eq', '')
+          .order('date', { ascending: false })
+          .limit(10);
+
+        if (telegramError) throw telegramError;
+        if (telegramData) {
+          setTelegramMessages(telegramData);
         }
 
         if (histData) {
@@ -438,6 +463,42 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Latest Telegram activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {telegramMessages.length > 0 ? (
+                telegramMessages.map((message, index) => (
+                  <div key={index} className="flex space-x-4">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={message.avatar}
+                        alt={`${message.author}'s avatar`}
+                        className="h-10 w-10 rounded-full"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium">{message.author}</span>
+                        <span className="text-sm text-muted-foreground">{message.username}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-sm">{message.content}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground">No Telegram messages available</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
     </div>
   );
 }
