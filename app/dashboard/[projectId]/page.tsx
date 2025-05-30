@@ -488,7 +488,7 @@ export default function Dashboard() {
                           {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
                         </span>
                       </div>
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm break-words">{message.content}</p>
                     </div>
                   </div>
                 ))
