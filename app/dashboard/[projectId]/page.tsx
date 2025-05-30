@@ -480,7 +480,7 @@ export default function Dashboard() {
                         className="h-10 w-10 rounded-full"
                       />
                     </div>
-                    <div className="flex-1 space-y-1">
+                    <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center space-x-2">
                         <span className="font-medium">{message.author}</span>
                         <span className="text-sm text-muted-foreground">{message.username}</span>
