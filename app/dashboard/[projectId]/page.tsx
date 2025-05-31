@@ -66,6 +66,14 @@ interface TelegramMessage {
   avatar: string;
 }
 
+interface GitHubCommit {
+  date: string;
+  author: string;
+  content: string;
+  comment: number;
+  avatar: string;
+}
+
 // Helper function to format large numbers for the chart only
 const formatYAxisTick = (value: number) => {
   if (value >= 1e9) {
@@ -93,6 +101,7 @@ export default function Dashboard() {
   const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
   const [twitterMessages, setTwitterMessages] = useState<TwitterMessage[]>([]);
   const [telegramMessages, setTelegramMessages] = useState<TelegramMessage[]>([]);
+  const [githubCommits, setGithubCommits] = useState<GitHubCommit[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -164,6 +173,18 @@ export default function Dashboard() {
         if (telegramError) throw telegramError;
         if (telegramData) {
           setTelegramMessages(telegramData);
+        }
+
+        const { data: githubData, error: githubError } = await supabase
+          .from('github')
+          .select('date, author, content, comment, avatar')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+        
+        if (githubError) throw githubError;
+        if (githubData) {
+          setGithubCommits(githubData);
         }
 
         if (histData) {
@@ -498,6 +519,46 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+            <CardHeader>
+              <CardTitle>Latest GitHub activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {githubCommits.length > 0 ? (
+                  githubCommits.map((commit, index) => (
+                    <div key={index} className="flex space-x-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={commit.avatar}
+                          alt={`${commit.author}'s avatar`}
+                          className="h-10 w-10 rounded-full"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{commit.author}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {format(new Date(commit.date), 'MMM d, yyyy HH:mm')}
+                          </span>
+                        </div>
+                        <p className="text-sm break-words">{commit.content}</p>
+                        <div className="flex items-center space-x-6 pt-2">
+                          <div className="flex items-center space-x-2">
+                            <img src="/comment.svg" alt="Comments" className="h-4 w-4" />
+                            <span className="text-sm text-muted-foreground">{commit.comment}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground">No GitHub commits available</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
     </div>
   );
