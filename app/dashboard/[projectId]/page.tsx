@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 import {
   LineChart,
   Line,
@@ -90,6 +91,7 @@ const formatYAxisTick = (value: number) => {
 
 export default function Dashboard() {
   const { projectId } = useParams();
+  const { theme } = useTheme();
   const [historicalData, setHistoricalData] = useState<DataPoint[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
@@ -459,19 +461,35 @@ export default function Dashboard() {
                       <p className="text-sm break-words">{message.content}</p>
                       <div className="flex items-center space-x-6 pt-2">
                         <div className="flex items-center space-x-2">
-                          <img src="/comment.svg" alt="Comments" className="h-4 w-4" />
+                          <img 
+                            src={theme === "dark" ? "/comment-light.svg" : "/comment.svg"} 
+                            alt="Comments" 
+                            className="h-4 w-4" 
+                          />
                           <span className="text-sm text-muted-foreground">{message.comment}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <img src="/retweet.svg" alt="Retweets" className="h-4 w-4" />
+                          <img 
+                            src={theme === "dark" ? "/retweet-light.svg" : "/retweet.svg"} 
+                            alt="Retweets" 
+                            className="h-4 w-4" 
+                          />
                           <span className="text-sm text-muted-foreground">{message.retweet}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <img src="/quote.svg" alt="Quotes" className="h-4 w-4" />
+                          <img 
+                            src={theme === "dark" ? "/quote-light.svg" : "/quote.svg"} 
+                            alt="Quotes" 
+                            className="h-4 w-4" 
+                          />
                           <span className="text-sm text-muted-foreground">{message.quote}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <img src="/like.svg" alt="Likes" className="h-4 w-4" />
+                          <img 
+                            src={theme === "dark" ? "/like-light.svg" : "/like.svg"} 
+                            alt="Likes" 
+                            className="h-4 w-4" 
+                          />
                           <span className="text-sm text-muted-foreground">{message.like}</span>
                         </div>
                       </div>
@@ -546,7 +564,11 @@ export default function Dashboard() {
                         <p className="text-sm break-words">{commit.content}</p>
                         <div className="flex items-center space-x-6 pt-2">
                           <div className="flex items-center space-x-2">
-                            <img src="/comment.svg" alt="Comments" className="h-4 w-4" />
+                            <img 
+                              src={theme === "dark" ? "/comment-light.svg" : "/comment.svg"} 
+                              alt="Comments" 
+                              className="h-4 w-4" 
+                            />
                             <span className="text-sm text-muted-foreground">{commit.comment}</span>
                           </div>
                         </div>
