@@ -196,13 +196,13 @@ export default function Home() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{totalUsers.toLocaleString()}</div>
-            <div className="text-sm text-muted-foreground">Total Users</div>
+            <div className="text-sm text-muted-foreground">Total Daily Users</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">24/7</div>
-            <div className="text-sm text-muted-foreground">Real-time Data</div>
+            <div className="text-sm text-muted-foreground">Daily-updated Data</div>
           </CardContent>
         </Card>
         <Card>
