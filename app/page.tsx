@@ -50,28 +50,46 @@ export default function Home() {
           setTotalProjects(projectsData.length)
         }
 
-        // Fetch latest metrics using the working RPC approach
+        // Fetch latest metrics using a subquery approach
         const { data: metricsData, error: metricsError } = await supabase
-          .rpc('execute_sql', {
-            query: `
-            SELECT t1.id, t1.twitter_user, t1.discord_user, t1.telegram_user, 
-                   t1.closing_price, t1.return, t1.twitter_post
-            FROM data t1
-            JOIN (
-              SELECT id, MAX(date) AS latest_date
-              FROM data
-              GROUP BY id
-            ) t2
-            ON t1.id = t2.id AND t1.date = t2.latest_date;
-            `
-          });
+          .from('data')
+          .select(`
+            id,
+            twitter_user,
+            discord_user,
+            telegram_user,
+            closing_price,
+            return,
+            twitter_post,
+            date
+          `)
+          .order('date', { ascending: false })
 
         if (metricsError) throw metricsError
+        
         if (metricsData) {
-          setProjectsData(metricsData)
+          // Group by id and get the latest entry for each project
+          const latestDataMap = new Map<string, ProjectData>()
+          
+          metricsData.forEach((item: any) => {
+            if (!latestDataMap.has(item.id)) {
+              latestDataMap.set(item.id, {
+                id: item.id,
+                twitter_user: item.twitter_user || 0,
+                discord_user: item.discord_user || 0,
+                telegram_user: item.telegram_user || 0,
+                closing_price: item.closing_price,
+                return: item.return,
+                twitter_post: item.twitter_post
+              })
+            }
+          })
+          
+          const latestData = Array.from(latestDataMap.values())
+          setProjectsData(latestData)
           
           // Calculate total users across all platforms
-          const total = metricsData.reduce((sum: number, project: ProjectData) => {
+          const total = latestData.reduce((sum: number, project: ProjectData) => {
             return sum + (project.twitter_user || 0) + (project.discord_user || 0) + (project.telegram_user || 0)
           }, 0)
           setTotalUsers(total)
