@@ -50,7 +50,7 @@ export default function Home() {
           setTotalProjects(projectsData.length)
         }
 
-        // Fetch latest metrics
+        // Fetch latest metrics using the working RPC approach
         const { data: metricsData, error: metricsError } = await supabase
           .rpc('execute_sql', {
             query: `
