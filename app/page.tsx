@@ -207,7 +207,7 @@ export default function Home() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">3+</div>
+            <div className="text-2xl font-bold">5+</div>
             <div className="text-sm text-muted-foreground">Social Platforms</div>
           </CardContent>
         </Card>
