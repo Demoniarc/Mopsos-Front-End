@@ -177,11 +177,11 @@ export default function Home() {
     <div className="space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-4 py-8">
-        <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Crypto Social Analytics
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Track and analyze social metrics across {totalProjects} crypto projects with {totalUsers.toLocaleString()} total community members
+          Track and analyze social metrics across {totalProjects} crypto projects with {totalUsers.toLocaleString()} total community members.
         </p>
       </div>
 
