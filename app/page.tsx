@@ -69,6 +69,10 @@ export default function Home() {
     return projectsData.find(data => data.id === projectId)
   }
 
+  const getUserLabel = (count: number) => {
+  return count === 0 || count === 1 ? 'user' : 'users'
+  }
+
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((project) => {
@@ -96,15 +100,15 @@ export default function Home() {
                 <dl className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <dt className="font-medium">Twitter</dt>
-                    <dd>{data?.twitter_user}</dd>
+                    <dd>{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
                   </div>
                   <div>
                     <dt className="font-medium">Discord</dt>
-                    <dd>{data?.discord_user}</dd>
+                    <dd>{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
                   </div>
                   <div>
                     <dt className="font-medium">Telegram</dt>
-                    <dd>{data?.telegram_user}</dd>
+                    <dd>{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
                   </div>
                 </dl>
               </CardContent>
