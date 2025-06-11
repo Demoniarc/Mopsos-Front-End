@@ -190,7 +190,7 @@ export default function Home() {
           Crypto Social Analytics
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Track and analyze social metrics across {totalProjects} crypto projects with {totalUsers.toLocaleString()} total daily community members.
+          Track and analyze social metrics across {totalProjects} crypto projects featuring {totalPosts.toLocaleString()} curated posts.
         </p>
       </div>
 
