@@ -204,8 +204,8 @@ export default function Home() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{totalUsers.toLocaleString()}</div>
-            <div className="text-sm text-muted-foreground">Total Daily Users</div>
+            <div className="text-2xl font-bold">{totalPosts.toLocaleString()}</div>
+            <div className="text-sm text-muted-foreground">Total Curated Posts</div>
           </CardContent>
         </Card>
         <Card>
