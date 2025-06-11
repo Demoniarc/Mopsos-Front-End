@@ -51,13 +51,12 @@ export default function Home() {
           setTotalProjects(projectsData.length)
         }
 
-        const { data: totalPosts, error } = await supabase
+        const { data: totalPosts, error: totalPostsError } = await supabase
           .rpc('get_total_posts');
-        
-        if (error) {
-          console.error("Erreur lors de la récupération de la somme totale :", error);
-        } else {
-          console.log("Somme totale des messages :", totalPosts);
+
+        if (totalPostsError) throw totalPostsError
+        if (totalPosts) {
+           setTotalPosts(totalPosts)
         }
         
         // Fetch latest metrics using a subquery approach
