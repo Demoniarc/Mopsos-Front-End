@@ -34,6 +34,7 @@ export default function Home() {
   const [favorites, setFavorites] = useState<string[]>([])
   const [totalProjects, setTotalProjects] = useState(0)
   const [totalUsers, setTotalUsers] = useState(0)
+  const [totalPosts, setTotalPosts] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -190,7 +191,7 @@ export default function Home() {
           Crypto Social Analytics
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Track and analyze social metrics across {totalProjects} crypto projects featuring {total.toLocaleString()} curated posts.
+          Track and analyze social metrics across {totalProjects} crypto projects featuring {totalPosts.toLocaleString()} curated posts.
         </p>
       </div>
 
