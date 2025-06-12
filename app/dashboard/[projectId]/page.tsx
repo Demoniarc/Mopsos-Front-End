@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { SocialActivitySlider } from "@/components/social-activity-slider";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 
@@ -44,7 +45,7 @@ interface DiscordMessage {
   date: string;
   author: string;
   avatar: string;
-  message: string;
+  content: string;
 }
 
 interface TwitterMessage {
@@ -214,7 +215,6 @@ export default function Dashboard() {
           });
 
           setMetrics(metricsArray);
-          //setSelectedMetrics(metricsArray.slice(0, 3).map(m => m.key));
           setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
         }
       } catch (error) {
@@ -390,198 +390,24 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
-         {projectDescription && (
-          <Card>
-            <CardHeader>
-              <CardTitle>About {projectName}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg leading-relaxed">{projectDescription}</p>
-            </CardContent>
-          </Card>
-        )}
-            <Card>
-        <CardHeader>
-          <CardTitle>Latest Discord activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {discordMessages.length > 0 ? (
-              discordMessages.map((message, index) => (
-                <div key={index} className="flex space-x-4">
-                  <div className="flex-shrink-0">
-                    <img
-                      src={`/discord_avatar/${message.avatar}`}
-                      alt={`${message.author}'s avatar`}
-                      className="h-10 w-10 rounded-full"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium">{message.author}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
-                      </span>
-                    </div>
-                    <p className="text-sm break-words">{message.content}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-muted-foreground">No Discord messages available</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-          <CardHeader>
-            <CardTitle>Latest Twitter activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {twitterMessages.length > 0 ? (
-                twitterMessages.map((message, index) => (
-                  <div key={index} className="flex space-x-4">
-                    <div className="flex-shrink-0">
-                      <img
-                        src={message.avatar}
-                        alt={`${message.author}'s avatar`}
-                        className="h-10 w-10 rounded-full"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{message.author}</span>
-                        <span className="text-sm text-muted-foreground">{message.author_id}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
-                        </span>
-                      </div>
-                      <p className="text-sm break-words">{message.content}</p>
-                      <div className="flex items-center space-x-6 pt-2">
-                        <div className="flex items-center space-x-2">
-                          <img 
-                            src={theme === "dark" ? "/comment-light.svg" : "/comment.svg"} 
-                            alt="Comments" 
-                            className="h-4 w-4" 
-                          />
-                          <span className="text-sm text-muted-foreground">{message.comment}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <img 
-                            src={theme === "dark" ? "/retweet-light.svg" : "/retweet.svg"} 
-                            alt="Retweets" 
-                            className="h-4 w-4" 
-                          />
-                          <span className="text-sm text-muted-foreground">{message.retweet}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <img 
-                            src={theme === "dark" ? "/quote-light.svg" : "/quote.svg"} 
-                            alt="Quotes" 
-                            className="h-4 w-4" 
-                          />
-                          <span className="text-sm text-muted-foreground">{message.quote}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <img 
-                            src={theme === "dark" ? "/like-light.svg" : "/like.svg"} 
-                            alt="Likes" 
-                            className="h-4 w-4" 
-                          />
-                          <span className="text-sm text-muted-foreground">{message.like}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground">No Twitter messages available</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
+      {projectDescription && (
         <Card>
           <CardHeader>
-            <CardTitle>Latest Telegram activity</CardTitle>
+            <CardTitle>About {projectName}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {telegramMessages.length > 0 ? (
-                telegramMessages.map((message, index) => (
-                  <div key={index} className="flex space-x-4">
-                    <div className="flex-shrink-0">
-                      <img
-                        src={message.avatar}
-                        alt={`${message.author}'s avatar`}
-                        className="h-10 w-10 rounded-full"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{message.author}</span>
-                        <span className="text-sm text-muted-foreground">{message.username}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(message.date), 'MMM d, yyyy HH:mm')}
-                        </span>
-                      </div>
-                      <p className="text-sm break-words">{message.content}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground">No Telegram messages available</p>
-              )}
-            </div>
+            <p className="text-lg leading-relaxed">{projectDescription}</p>
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-            <CardHeader>
-              <CardTitle>Latest GitHub activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {githubCommits.length > 0 ? (
-                  githubCommits.map((commit, index) => (
-                    <div key={index} className="flex space-x-4">
-                      <div className="flex-shrink-0">
-                        <img
-                          src={commit.avatar}
-                          alt={`${commit.author}'s avatar`}
-                          className="h-10 w-10 rounded-full"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">{commit.author}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {format(new Date(commit.date), 'MMM d, yyyy HH:mm')}
-                          </span>
-                        </div>
-                        <p className="text-sm break-words">{commit.content}</p>
-                        <div className="flex items-center space-x-6 pt-2">
-                          <div className="flex items-center space-x-2">
-                            <img 
-                              src={theme === "dark" ? "/comment-light.svg" : "/comment.svg"} 
-                              alt="Comments" 
-                              className="h-4 w-4" 
-                            />
-                            <span className="text-sm text-muted-foreground">{commit.comment}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground">No GitHub commits available</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
+      <SocialActivitySlider
+        discordMessages={discordMessages}
+        twitterMessages={twitterMessages}
+        telegramMessages={telegramMessages}
+        githubCommits={githubCommits}
+      />
     </div>
   );
 }
