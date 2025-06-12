@@ -255,9 +255,6 @@ export default function Dashboard() {
     return <p>No data available.</p>;
   }
 
-  const currentData = historicalData[historicalData.length - 1];
-  const previousData = historicalData[historicalData.length - 2];
-
   const toggleMetric = (metricKey: string) => {
     setSelectedMetrics((prev) =>
       prev.includes(metricKey)
@@ -272,12 +269,6 @@ export default function Dashboard() {
     { label: "1y", days: 365 },
     { label: "All", days: null },
   ];
-
-  function calculateChange(current: number, previous: number) {
-    if (previous === 0) return "N/A";
-    const change = ((current - previous) / previous) * 100;
-    return change.toFixed(2);
-  }
 
   return (
     <div className="space-y-6">
@@ -371,25 +362,6 @@ export default function Dashboard() {
           </ChartContainer>
         </CardContent>
       </Card>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {metrics.map((metric) => (
-          <Card key={metric.key}>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">{metric.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold">
-                {currentData[metric.key].toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {calculateChange(currentData[metric.key], previousData[metric.key])}
-                % from the previous day
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       {projectDescription && (
         <Card>
