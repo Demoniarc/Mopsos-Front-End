@@ -1,441 +1,413 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { supabase } from "@/lib/supabase"
-import { TrendingUp, TrendingDown, Search, Filter, Star } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { SocialActivitySlider } from "@/components/social-activity-slider";
+import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
+
+interface Metric {
+  name: string;
+  key: string;
+  color: string;
+  yAxisId?: string;
+}
+
+interface DataPoint {
+  date: string;
+  [key: string]: any;
+}
 
 interface Project {
-  id: string
-  name: string
-  url: string
+  id: string;
+  name: string;
+  logo: string;
+  description: string;
 }
 
-interface ProjectData {
-  id: string
-  twitter_user: number
-  discord_user: number
-  telegram_user: number
-  closing_price?: number
-  return?: number
-  twitter_post?: number
+interface DiscordMessage {
+  date: string;
+  author: string;
+  avatar: string;
+  content: string;
 }
 
-export default function Home() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [projectsData, setProjectsData] = useState<ProjectData[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState<'name' | 'twitter' | 'discord' | 'telegram' | 'price'>('name')
-  const [favorites, setFavorites] = useState<string[]>([])
-  const [totalProjects, setTotalProjects] = useState(0)
-  const [totalUsers, setTotalUsers] = useState(0)
-  const [totalPosts, setTotalPosts] = useState(0);
+interface TwitterMessage {
+  date: string;
+  author: string;
+  author_id: string;
+  avatar: string;
+  content: string;
+  like: number;
+  retweet: number;
+  quote: number;
+  comment: number;
+}
+
+interface TelegramMessage {
+  date: string;
+  author: string;
+  username: string;
+  content: string;
+  avatar: string;
+}
+
+interface GitHubCommit {
+  date: string;
+  author: string;
+  content: string;
+  comment: number;
+  avatar: string;
+}
+
+// Helper function to format large numbers for the chart only
+const formatYAxisTick = (value: number) => {
+  if (value >= 1e9) {
+    return `${(value / 1e9).toFixed(0)}B`;
+  }
+  if (value >= 1e6) {
+    return `${(value / 1e6).toFixed(0)}M`;
+  }
+  if (value >= 1e3) {
+    return `${(value / 1e3).toFixed(0)}K`;
+  }
+  return value;
+};
+
+export default function Dashboard() {
+  const { projectId } = useParams();
+  const { theme } = useTheme();
+  const [historicalData, setHistoricalData] = useState<DataPoint[]>([]);
+  const [metrics, setMetrics] = useState<Metric[]>([]);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRange, setSelectedRange] = useState("30d");
+  const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
+  const [projectName, setProjectName] = useState<string>("");
+  const [projectDescription, setProjectDescription] = useState<string>("");
+  const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
+  const [twitterMessages, setTwitterMessages] = useState<TwitterMessage[]>([]);
+  const [telegramMessages, setTelegramMessages] = useState<TelegramMessage[]>([]);
+  const [githubCommits, setGithubCommits] = useState<GitHubCommit[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function loadData() {
       try {
-        // Fetch projects
-        const { data: projectsData, error: projectsError } = await supabase
+        // Fetch project details
+        const { data: projectData, error: projectError } = await supabase
           .from('project')
-          .select('*')
-          .neq('display', 'false')
+          .select('name, description')
+          .eq('id', projectId)
+          .single();
 
-        if (projectsError) throw projectsError
-        if (projectsData) {
-          setProjects(projectsData)
-          setTotalProjects(projectsData.length)
+        if (projectError) throw projectError;
+        if (projectData) {
+          setProjectName(projectData.name);
+          setProjectDescription(projectData.description);
         }
 
-        const { data: totalPosts, error: totalPostsError } = await supabase
-          .rpc('get_total_posts');
-
-        if (totalPostsError) throw totalPostsError
-        if (totalPosts) {
-           setTotalPosts(totalPosts)
-        }
-        
-        // Fetch latest metrics using a subquery approach
-        const { data: metricsData, error: metricsError } = await supabase
+        // Fetch historical data
+        const { data: histData, error: histError } = await supabase
           .from('data')
-          .select(`
-            id,
-            twitter_user,
-            discord_user,
-            telegram_user,
-            closing_price,
-            return,
-            twitter_post,
-            date
-          `)
-          .order('date', { ascending: false })
+          .select('*')
+          .eq('id', projectId)
+          .order('date', { ascending: true });
 
-        if (metricsError) throw metricsError
+        if (histError) throw histError;
+
+        // Fetch color mappings
+        const { data: colorData, error: colorError } = await supabase
+          .from('color')
+          .select('*');
+
+        if (colorError) throw colorError;
+
+        const { data: discordData, error: discordError } = await supabase
+          .from('discord_duplicate')
+          .select('date, author, avatar, content')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
         
-        if (metricsData) {
-          // Group by id and get the latest entry for each project
-          const latestDataMap = new Map<string, ProjectData>()
-          
-          metricsData.forEach((item: any) => {
-            if (!latestDataMap.has(item.id)) {
-              latestDataMap.set(item.id, {
-                id: item.id,
-                twitter_user: item.twitter_user || 0,
-                discord_user: item.discord_user || 0,
-                telegram_user: item.telegram_user || 0,
-                closing_price: item.closing_price,
-                return: item.return,
-                twitter_post: item.twitter_post
-              })
-            }
-          })
-          
-          const latestData = Array.from(latestDataMap.values())
-          setProjectsData(latestData)
-          
-          // Calculate total users across all platforms
-          const total = latestData.reduce((sum: number, project: ProjectData) => {
-            return sum + (project.twitter_user || 0) + (project.discord_user || 0) + (project.telegram_user || 0)
-          }, 0)
-          setTotalUsers(total)
+        if (discordError) throw discordError;
+        if (discordData) {
+          setDiscordMessages(discordData);
+        }
+
+        const { data: twitterData, error: twitterError } = await supabase
+          .from('twitter')
+          .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+      
+        if (twitterError) throw twitterError;
+        if (twitterData) {
+          setTwitterMessages(twitterData);
+        }
+
+        const { data: telegramData, error: telegramError } = await supabase
+          .from('telegram_duplicate')
+          .select('date, author, username, content, avatar')
+          .eq('id', projectId)
+          .eq('bot', false)
+          .not('author', 'eq', '')
+          .not('username', 'eq', '')
+          .not('content', 'eq', '')
+          .order('date', { ascending: false })
+          .limit(10);
+
+        if (telegramError) throw telegramError;
+        if (telegramData) {
+          setTelegramMessages(telegramData);
+        }
+
+        const { data: githubData, error: githubError } = await supabase
+          .from('github')
+          .select('date, author, content, comment, avatar')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+        
+        if (githubError) throw githubError;
+        if (githubData) {
+          setGithubCommits(githubData);
+        }
+
+        if (histData) {
+          setHistoricalData(histData);
+
+          // Determine available metrics (non-null values)
+          const availableMetrics = new Set<string>();
+          histData.forEach(dataPoint => {
+            Object.entries(dataPoint).forEach(([key, value]) => {
+              if (value !== null && key !== 'id' && key !== 'date') {
+                availableMetrics.add(key);
+              }
+            });
+          });
+
+          // Create metrics array with colors and yAxisId
+          const metricsArray = Array.from(availableMetrics).map(key => {
+            const colorMapping = colorData?.find(c => c.metric === key);
+            return {
+              name: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+              key,
+              color: colorMapping?.color || '#000000',
+              yAxisId: key === 'closing_price' || key === 'opening_price' ? 'right' : 'left'
+            };
+          });
+
+          setMetrics(metricsArray);
+          setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error("Error while loading data:", error);
+      } finally {
+        setLoading(false);
       }
     }
 
-    fetchData()
-    
-    // Load favorites from localStorage
-    const savedFavorites = localStorage.getItem('mopsos-favorites')
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites))
+    loadData();
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!historicalData.length) return;
+
+    const range = timeRanges.find(r => r.label === selectedRange);
+    if (!range?.days) {
+      setFilteredData(historicalData);
+      return;
     }
-  }, [])
 
-  const getUserLabel = (count: number) => {
-    return count === 0 || count === 1 ? 'user' : 'users'
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - range.days);
+
+    const filtered = historicalData.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= cutoffDate;
+    });
+
+    setFilteredData(filtered);
+  }, [historicalData, selectedRange]);
+
+  if (loading) {
+    return <p>Loading data...</p>;
   }
 
-  const getProjectData = (projectId: string) => {
-    return projectsData.find(data => data.id === projectId)
+  if (!historicalData.length) {
+    return <p>No data available.</p>;
   }
 
-  const toggleFavorite = (projectId: string) => {
-    const newFavorites = favorites.includes(projectId)
-      ? favorites.filter(id => id !== projectId)
-      : [...favorites, projectId]
-    
-    setFavorites(newFavorites)
-    localStorage.setItem('mopsos-favorites', JSON.stringify(newFavorites))
+  const currentData = historicalData[historicalData.length - 1];
+  const previousData = historicalData[historicalData.length - 2];
+
+  const toggleMetric = (metricKey: string) => {
+    setSelectedMetrics((prev) =>
+      prev.includes(metricKey)
+        ? prev.filter((key) => key !== metricKey)
+        : [...prev, metricKey]
+    );
+  };
+
+  const timeRanges = [
+    { label: "30d", days: 30 },
+    { label: "90d", days: 90 },
+    { label: "1y", days: 365 },
+    { label: "All", days: null },
+  ];
+
+  function calculateChange(current: number, previous: number) {
+    if (previous === 0) return "N/A";
+    const change = ((current - previous) / previous) * 100;
+    return change.toFixed(2);
   }
-
-  const getActivityLevel = (data: ProjectData | undefined) => {
-    if (!data) return 'low'
-    const totalActivity = (data.twitter_user || 0) + (data.discord_user || 0) + (data.telegram_user || 0)
-    if (totalActivity > 1000) return 'high'
-    if (totalActivity > 50) return 'medium'
-    return 'low'
-  }
-
-  const getActivityBadge = (level: string) => {
-    switch (level) {
-      case 'high':
-        return <Badge variant="default\" className="bg-green-500">High Activity</Badge>
-      case 'medium':
-        return <Badge variant="secondary">Medium Activity</Badge>
-      case 'low':
-        return <Badge variant="outline">Low Activity</Badge>
-      default:
-        return null
-    }
-  }
-
-  const filteredAndSortedProjects = projects
-    .filter(project => 
-      project.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      const dataA = getProjectData(a.id)
-      const dataB = getProjectData(b.id)
-      
-      switch (sortBy) {
-        case 'twitter':
-          return (dataB?.twitter_user || 0) - (dataA?.twitter_user || 0)
-        case 'discord':
-          return (dataB?.discord_user || 0) - (dataA?.discord_user || 0)
-        case 'telegram':
-          return (dataB?.telegram_user || 0) - (dataA?.telegram_user || 0)
-        case 'price':
-          return (dataB?.closing_price || 0) - (dataA?.closing_price || 0)
-        case 'name':
-        default:
-          return a.name.localeCompare(b.name)
-      }
-    })
-
-  // Separate favorites and regular projects
-  const favoriteProjects = filteredAndSortedProjects.filter(project => favorites.includes(project.id))
-  const regularProjects = filteredAndSortedProjects.filter(project => !favorites.includes(project.id))
 
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="text-center space-y-4 py-8">
-        <h1 className="text-3xl md:text-5xl font-bold leading-tight pb-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Crypto Social Analytics
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Track and analyze social metrics across {totalProjects} crypto projects featuring {totalPosts.toLocaleString()} curated posts.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <h1 className="text-2xl md:text-3xl font-bold capitalize">{projectName} dashboard</h1>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{totalProjects}</div>
-            <div className="text-sm text-muted-foreground">Projects Tracked</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{totalPosts.toLocaleString()}</div>
-            <div className="text-sm text-muted-foreground">Total Curated Posts</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">24/7</div>
-            <div className="text-sm text-muted-foreground">Daily-updated Data</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">5+</div>
-            <div className="text-sm text-muted-foreground">Social Platforms</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={sortBy === 'name' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortBy('name')}
-          >
-            Name
-          </Button>
-          <Button
-            variant={sortBy === 'twitter' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortBy('twitter')}
-          >
-            Twitter
-          </Button>
-          <Button
-            variant={sortBy === 'discord' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortBy('discord')}
-          >
-            Discord
-          </Button>
-          <Button
-            variant={sortBy === 'telegram' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortBy('telegram')}
-          >
-            Telegram
-          </Button>
-        </div>
-      </div>
-
-      {/* Favorites Section */}
-      {favoriteProjects.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Star className="h-6 w-6 text-yellow-500" />
-            Your Favorites
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {favoriteProjects.map((project) => {
-              const data = getProjectData(project.id)
-              const activityLevel = getActivityLevel(data)
-              
-              return (
-                <div key={project.id} className="relative">
-                  <Link href={`/dashboard/${project.id}`}>
-                    <Card className="hover:bg-accent transition-all duration-200 hover:shadow-lg border-2 border-yellow-200 dark:border-yellow-800">
-                      <CardHeader className="flex flex-row items-center space-x-4">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full overflow-hidden">
-                            <Image
-                              src={project.url}
-                              alt={`${project.name} logo`}
-                              width={48}
-                              height={48}
-                              className="w-full h-full object-cover scale-102"
-                              sizes="48px"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="flex items-center justify-between">
-                            {project.name}
-                            {getActivityBadge(activityLevel)}
-                          </CardTitle>
-                          {data?.closing_price && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-sm font-medium">${data.closing_price.toFixed(4)}</span>
-                              {data.return !== undefined && (
-                                <div className={`flex items-center text-xs ${data.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {data.return >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                  {data.return.toFixed(2)}%
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <dl className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <dt className="font-medium">Twitter</dt>
-                            <dd>{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
-                          </div>
-                          <div>
-                            <dt className="font-medium">Discord</dt>
-                            <dd>{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
-                          </div>
-                          <div>
-                            <dt className="font-medium">Telegram</dt>
-                            <dd>{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
-                          </div>
-                        </dl>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      toggleFavorite(project.id)
-                    }}
-                  >
-                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                  </Button>
-                </div>
-              )
-            })}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Historical data</CardTitle>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {timeRanges.map((range) => (
+              <Button
+                key={range.label}
+                variant={selectedRange === range.label ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedRange(range.label)}
+              >
+                {range.label}
+              </Button>
+            ))}
           </div>
-        </div>
-      )}
-
-      {/* All Projects Section */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">
-          {favoriteProjects.length > 0 ? 'All Projects' : 'Projects'}
-          <span className="text-sm font-normal text-muted-foreground ml-2">
-            ({filteredAndSortedProjects.length} {filteredAndSortedProjects.length === 1 ? 'project' : 'projects'})
-          </span>
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {regularProjects.map((project) => {
-            const data = getProjectData(project.id)
-            const activityLevel = getActivityLevel(data)
-            
-            return (
-              <div key={project.id} className="relative">
-                <Link href={`/dashboard/${project.id}`}>
-                  <Card className="hover:bg-accent transition-all duration-200 hover:shadow-lg">
-                    <CardHeader className="flex flex-row items-center space-x-4">
-                      <div className="w-12 h-12 flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full overflow-hidden">
-                          <Image
-                            src={project.url}
-                            alt={`${project.name} logo`}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover scale-102"
-                            sizes="48px"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <CardTitle className="flex items-center justify-between">
-                          {project.name}
-                          {getActivityBadge(activityLevel)}
-                        </CardTitle>
-                        {data?.closing_price && (
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-sm font-medium">${data.closing_price.toFixed(4)}</span>
-                            {data.return !== undefined && (
-                              <div className={`flex items-center text-xs ${data.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {data.return >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                {data.return.toFixed(2)}%
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <dl className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <dt className="font-medium">Twitter</dt>
-                          <dd>{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium">Discord</dt>
-                          <dd>{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium">Telegram</dt>
-                          <dd>{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
-                        </div>
-                      </dl>
-                    </CardContent>
-                  </Card>
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    toggleFavorite(project.id)
-                  }}
-                >
-                  <Star className="h-4 w-4" />
-                </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 flex flex-wrap gap-4">
+            {metrics.map((metric) => (
+              <div key={metric.key} className="flex items-center space-x-2">
+                <Checkbox
+                  id={metric.key}
+                  checked={selectedMetrics.includes(metric.key)}
+                  onCheckedChange={() => toggleMetric(metric.key)}
+                />
+                <Label htmlFor={metric.key} className="text-sm">
+                  {metric.name}
+                </Label>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+          <ChartContainer
+            config={metrics.reduce((acc, metric) => {
+              acc[metric.key] = {
+                label: metric.name,
+                color: metric.color,
+              };
+              return acc;
+            }, {})}
+            className="h-[300px] md:h-[400px] lg:h-[600px] w-full"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={filteredData}
+                margin={{ 
+                  top: 5, 
+                  right: 5,
+                  left: 5,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                <YAxis 
+                  yAxisId="left" 
+                  tick={{ fontSize: 12 }} 
+                  tickFormatter={formatYAxisTick}
+                  width={45}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={formatYAxisTick}
+                  width={45}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
+                {selectedMetrics.map((metricKey) => {
+                  const metric = metrics.find((m) => m.key === metricKey);
+                  return (
+                    <Line
+                      key={metricKey}
+                      type="linear"
+                      dataKey={metricKey}
+                      stroke={metric?.color}
+                      name={metric?.name}
+                      strokeWidth={2}
+                      dot={false}
+                      yAxisId={metric?.yAxisId || "left"}
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {metrics.map((metric) => (
+          <Card key={metric.key}>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">{metric.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">
+                {currentData[metric.key].toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {calculateChange(currentData[metric.key], previousData[metric.key])}
+                % from the previous day
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {filteredAndSortedProjects.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No projects found matching your search.</p>
-        </div>
+      {projectDescription && (
+        <Card>
+          <CardHeader>
+            <CardTitle>About {projectName}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg leading-relaxed">{projectDescription}</p>
+          </CardContent>
+        </Card>
       )}
+
+      <SocialActivitySlider
+        discordMessages={discordMessages}
+        twitterMessages={twitterMessages}
+        telegramMessages={telegramMessages}
+        githubCommits={githubCommits}
+      />
     </div>
-  )
+  );
 }
