@@ -136,7 +136,7 @@ export default function Dashboard() {
             .select('*')
             .eq('id', projectId)
             .order('date', { ascending: true })
-            .limit(1000), // Limite pour éviter les requêtes trop lourdes
+            .limit(1500), // Limite pour éviter les requêtes trop lourdes
 
           // Fetch color mappings
           supabase
