@@ -97,6 +97,7 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedRange, setSelectedRange] = useState("30d");
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
@@ -109,89 +110,96 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadData() {
       try {
-        // Fetch project details
-        const { data: projectData, error: projectError } = await supabase
-          .from('project')
-          .select('name, description')
-          .eq('id', projectId)
-          .single();
+        setLoading(true);
+        setError(null);
 
-        if (projectError) throw projectError;
-        if (projectData) {
-          setProjectName(projectData.name);
-          setProjectDescription(projectData.description);
+        // Exécuter toutes les requêtes en parallèle pour améliorer les performances
+        const [
+          projectResult,
+          histDataResult,
+          colorDataResult,
+          discordResult,
+          twitterResult,
+          telegramResult,
+          githubResult
+        ] = await Promise.allSettled([
+          // Fetch project details
+          supabase
+            .from('project')
+            .select('name, description')
+            .eq('id', projectId)
+            .single(),
+
+          // Fetch historical data avec limite pour éviter les requêtes trop lourdes
+          supabase
+            .from('data')
+            .select('*')
+            .eq('id', projectId)
+            .order('date', { ascending: true })
+            .limit(2500), // Limite pour éviter les requêtes trop lourdes
+
+          // Fetch color mappings
+          supabase
+            .from('color')
+            .select('*'),
+
+          // Fetch Discord messages
+          supabase
+            .from('discord_duplicate')
+            .select('date, author, avatar, content')
+            .eq('id', projectId)
+            .order('date', { ascending: false })
+            .limit(10),
+
+          // Fetch Twitter messages
+          supabase
+            .from('twitter')
+            .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
+            .eq('id', projectId)
+            .order('date', { ascending: false })
+            .limit(10),
+
+          // Fetch Telegram messages
+          supabase
+            .from('telegram_duplicate')
+            .select('date, author, username, content, avatar')
+            .eq('id', projectId)
+            .eq('bot', false)
+            .not('author', 'eq', '')
+            .not('username', 'eq', '')
+            .not('content', 'eq', '')
+            .order('date', { ascending: false })
+            .limit(10),
+
+          // Fetch GitHub commits
+          supabase
+            .from('github')
+            .select('date, author, content, comment, avatar')
+            .eq('id', projectId)
+            .order('date', { ascending: false })
+            .limit(10)
+        ]);
+
+        // Traitement des résultats avec gestion d'erreur individuelle
+        let hasMainData = false;
+
+        // Project data
+        if (projectResult.status === 'fulfilled' && projectResult.value.data) {
+          setProjectName(projectResult.value.data.name || '');
+          setProjectDescription(projectResult.value.data.description || '');
         }
 
-        // Fetch historical data
-        const { data: histData, error: histError } = await supabase
-          .from('data')
-          .select('*')
-          .eq('id', projectId)
-          .order('date', { ascending: true });
-
-        if (histError) throw histError;
-
-        // Fetch color mappings
-        const { data: colorData, error: colorError } = await supabase
-          .from('color')
-          .select('*');
-
-        if (colorError) throw colorError;
-
-        const { data: discordData, error: discordError } = await supabase
-          .from('discord_duplicate')
-          .select('date, author, avatar, content')
-          .eq('id', projectId)
-          .order('date', { ascending: false })
-          .limit(10);
-        
-        if (discordError) throw discordError;
-        if (discordData) {
-          setDiscordMessages(discordData);
-        }
-
-        const { data: twitterData, error: twitterError } = await supabase
-          .from('twitter')
-          .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
-          .eq('id', projectId)
-          .order('date', { ascending: false })
-          .limit(10);
-      
-        if (twitterError) throw twitterError;
-        if (twitterData) {
-          setTwitterMessages(twitterData);
-        }
-
-        const { data: telegramData, error: telegramError } = await supabase
-          .from('telegram_duplicate')
-          .select('date, author, username, content, avatar')
-          .eq('id', projectId)
-          .eq('bot', false)
-          .not('author', 'eq', '')
-          .not('username', 'eq', '')
-          .not('content', 'eq', '')
-          .order('date', { ascending: false })
-          .limit(10);
-
-        if (telegramError) throw telegramError;
-        if (telegramData) {
-          setTelegramMessages(telegramData);
-        }
-
-        const { data: githubData, error: githubError } = await supabase
-          .from('github')
-          .select('date, author, content, comment, avatar')
-          .eq('id', projectId)
-          .order('date', { ascending: false })
-          .limit(10);
-        
-        if (githubError) throw githubError;
-        if (githubData) {
-          setGithubCommits(githubData);
-        }
-
-        if (histData) {
+        // Historical data (critique pour le dashboard)
+        if (histDataResult.status === 'fulfilled' && histDataResult.value.data) {
+          const histData = histDataResult.value.data;
           setHistoricalData(histData);
+          hasMainData = true;
+
+          // Color data
+          let colorData = [];
+          if (colorDataResult.status === 'fulfilled' && colorDataResult.value.data) {
+            colorData = colorDataResult.value.data;
+          }
 
           // Determine available metrics (non-null values)
           const availableMetrics = new Set<string>();
@@ -217,14 +225,40 @@ export default function Dashboard() {
           setMetrics(metricsArray);
           setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
         }
+
+        // Social media data (non-critique, ne bloque pas le dashboard)
+        if (discordResult.status === 'fulfilled' && discordResult.value.data) {
+          setDiscordMessages(discordResult.value.data);
+        }
+
+        if (twitterResult.status === 'fulfilled' && twitterResult.value.data) {
+          setTwitterMessages(twitterResult.value.data);
+        }
+
+        if (telegramResult.status === 'fulfilled' && telegramResult.value.data) {
+          setTelegramMessages(telegramResult.value.data);
+        }
+
+        if (githubResult.status === 'fulfilled' && githubResult.value.data) {
+          setGithubCommits(githubResult.value.data);
+        }
+
+        // Si aucune donnée principale n'est disponible, afficher une erreur
+        if (!hasMainData) {
+          setError("No historical data available for this project");
+        }
+
       } catch (error) {
         console.error("Error while loading data:", error);
+        setError("Failed to load dashboard data. Please try again.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadData();
+    if (projectId) {
+      loadData();
+    }
   }, [projectId]);
 
   useEffect(() => {
@@ -248,11 +282,50 @@ export default function Dashboard() {
   }, [historicalData, selectedRange]);
 
   if (loading) {
-    return <p>Loading data...</p>;
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+          <div className="h-64 bg-gray-200 rounded mb-6"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (!historicalData.length) {
-    return <p>No data available.</p>;
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl md:text-3xl font-bold capitalize">
+          {projectName || 'Project'} dashboard
+        </h1>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <p className="text-muted-foreground">No historical data available for this project.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const toggleMetric = (metricKey: string) => {
@@ -272,7 +345,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold capitalize">{projectName} dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold capitalize">
+        {projectName || 'Project'} dashboard
+      </h1>
 
       <Card className="w-full">
         <CardHeader>
