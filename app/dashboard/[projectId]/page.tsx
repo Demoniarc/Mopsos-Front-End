@@ -555,30 +555,6 @@ export default function Dashboard() {
             telegramMessages={telegramMessages}
             githubCommits={githubCommits}
           />
-          
-          {/* Debug info and controls */}
-          <Card className="border-dashed">
-            <CardContent className="p-4">
-              <div className="text-xs text-muted-foreground space-y-2">
-                <div className="flex items-center justify-between">
-                  <span>
-                    Social data: Discord({discordMessages.length}), Twitter({twitterMessages.length}), 
-                    Telegram({telegramMessages.length}), GitHub({githubCommits.length})
-                  </span>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={retrySocialMediaData}>
-                      Reload Social Data
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  Status: {socialDataLoaded ? 'Loaded' : 'Not loaded'} | 
-                  Attempts: {socialDataAttempts} | 
-                  Loading: {socialDataLoading ? 'Yes' : 'No'}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </>
       )}
     </div>
