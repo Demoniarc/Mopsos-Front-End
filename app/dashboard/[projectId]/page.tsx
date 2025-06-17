@@ -76,13 +76,6 @@ interface GitHubCommit {
   avatar: string;
 }
 
-interface SocialMediaData {
-  discord: DiscordMessage[];
-  twitter: TwitterMessage[];
-  telegram: TelegramMessage[];
-  github: GitHubCommit[];
-}
-
 // Helper function to format large numbers for the chart only
 const formatYAxisTick = (value: number) => {
   if (value >= 1e9) {
@@ -109,12 +102,17 @@ export default function Dashboard() {
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
-  const [socialMediaData, setSocialMediaData] = useState<SocialMediaData>({
-    discord: [],
-    twitter: [],
-    telegram: [],
-    github: []
-  });
+  const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
+  const [twitterMessages, setTwitterMessages] = useState<TwitterMessage[]>([]);
+  const [telegramMessages, setTelegramMessages] = useState<TelegramMessage[]>([]);
+  const [githubCommits, setGithubCommits] = useState<GitHubCommit[]>([]);
+
+  const timeRanges = [
+    { label: "30d", days: 30 },
+    { label: "90d", days: 90 },
+    { label: "1y", days: 365 },
+    { label: "All", days: null },
+  ];
 
   useEffect(() => {
     async function loadData() {
@@ -122,13 +120,11 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
 
-        // Reset social media data at the beginning
-        setSocialMediaData({
-          discord: [],
-          twitter: [],
-          telegram: [],
-          github: []
-        });
+        // Reset all social media data at the beginning
+        setDiscordMessages([]);
+        setTwitterMessages([]);
+        setTelegramMessages([]);
+        setGithubCommits([]);
 
         // Fetch project details first
         const { data: projectData, error: projectError } = await supabase
@@ -197,7 +193,7 @@ export default function Dashboard() {
         setMetrics(metricsArray);
         setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
 
-        // Now fetch social media data sequentially to avoid race conditions
+        // Now fetch social media data with proper error handling
         await loadSocialMediaData();
 
       } catch (error) {
@@ -209,40 +205,25 @@ export default function Dashboard() {
     }
 
     async function loadSocialMediaData() {
-      const newSocialData: SocialMediaData = {
-        discord: [],
-        twitter: [],
-        telegram: [],
-        github: []
-      };
-
       try {
         // Fetch Discord messages
-        const { data: discordData, error: discordError } = await supabase
+        const discordPromise = supabase
           .from('discord_duplicate')
           .select('date, author, avatar, content')
           .eq('id', projectId)
           .order('date', { ascending: false })
           .limit(10);
 
-        if (!discordError && discordData) {
-          newSocialData.discord = discordData;
-        }
-
         // Fetch Twitter messages
-        const { data: twitterData, error: twitterError } = await supabase
+        const twitterPromise = supabase
           .from('twitter')
           .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
           .eq('id', projectId)
           .order('date', { ascending: false })
           .limit(10);
 
-        if (!twitterError && twitterData) {
-          newSocialData.twitter = twitterData;
-        }
-
         // Fetch Telegram messages
-        const { data: telegramData, error: telegramError } = await supabase
+        const telegramPromise = supabase
           .from('telegram_duplicate')
           .select('date, author, username, content, avatar')
           .eq('id', projectId)
@@ -253,24 +234,41 @@ export default function Dashboard() {
           .order('date', { ascending: false })
           .limit(10);
 
-        if (!telegramError && telegramData) {
-          newSocialData.telegram = telegramData;
-        }
-
         // Fetch GitHub commits
-        const { data: githubData, error: githubError } = await supabase
+        const githubPromise = supabase
           .from('github')
           .select('date, author, content, comment, avatar')
           .eq('id', projectId)
           .order('date', { ascending: false })
           .limit(10);
 
-        if (!githubError && githubData) {
-          newSocialData.github = githubData;
+        // Execute all promises and handle results
+        const [discordResult, twitterResult, telegramResult, githubResult] = await Promise.allSettled([
+          discordPromise,
+          twitterPromise,
+          telegramPromise,
+          githubPromise
+        ]);
+
+        // Process Discord data
+        if (discordResult.status === 'fulfilled' && discordResult.value.data) {
+          setDiscordMessages(discordResult.value.data);
         }
 
-        // Update social media data in one go
-        setSocialMediaData(newSocialData);
+        // Process Twitter data
+        if (twitterResult.status === 'fulfilled' && twitterResult.value.data) {
+          setTwitterMessages(twitterResult.value.data);
+        }
+
+        // Process Telegram data
+        if (telegramResult.status === 'fulfilled' && telegramResult.value.data) {
+          setTelegramMessages(telegramResult.value.data);
+        }
+
+        // Process GitHub data
+        if (githubResult.status === 'fulfilled' && githubResult.value.data) {
+          setGithubCommits(githubResult.value.data);
+        }
 
       } catch (error) {
         console.error("Error loading social media data:", error);
@@ -357,13 +355,6 @@ export default function Dashboard() {
         : [...prev, metricKey]
     );
   };
-
-  const timeRanges = [
-    { label: "30d", days: 30 },
-    { label: "90d", days: 90 },
-    { label: "1y", days: 365 },
-    { label: "All", days: null },
-  ];
 
   return (
     <div className="space-y-6">
@@ -472,10 +463,10 @@ export default function Dashboard() {
       )}
 
       <SocialActivitySlider
-        discordMessages={socialMediaData.discord}
-        twitterMessages={socialMediaData.twitter}
-        telegramMessages={socialMediaData.telegram}
-        githubCommits={socialMediaData.github}
+        discordMessages={discordMessages}
+        twitterMessages={twitterMessages}
+        telegramMessages={telegramMessages}
+        githubCommits={githubCommits}
       />
     </div>
   );
