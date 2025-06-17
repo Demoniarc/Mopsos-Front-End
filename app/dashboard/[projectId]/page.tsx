@@ -161,7 +161,7 @@ export default function Dashboard() {
       setGithubCommits([]);
 
       // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Load each platform sequentially to avoid overwhelming the database
       const discordData = await loadPlatformData('Discord', 
@@ -174,7 +174,7 @@ export default function Dashboard() {
       );
       
       // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const twitterData = await loadPlatformData('Twitter',
         supabase
@@ -185,7 +185,7 @@ export default function Dashboard() {
           .limit(10)
       );
       
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const telegramData = await loadPlatformData('Telegram',
         supabase
@@ -200,7 +200,7 @@ export default function Dashboard() {
           .limit(10)
       );
       
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const githubData = await loadPlatformData('GitHub',
         supabase
