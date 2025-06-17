@@ -76,6 +76,13 @@ interface GitHubCommit {
   avatar: string;
 }
 
+interface SocialMediaData {
+  discord: DiscordMessage[];
+  twitter: TwitterMessage[];
+  telegram: TelegramMessage[];
+  github: GitHubCommit[];
+}
+
 // Helper function to format large numbers for the chart only
 const formatYAxisTick = (value: number) => {
   if (value >= 1e9) {
@@ -102,10 +109,12 @@ export default function Dashboard() {
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
-  const [discordMessages, setDiscordMessages] = useState<DiscordMessage[]>([]);
-  const [twitterMessages, setTwitterMessages] = useState<TwitterMessage[]>([]);
-  const [telegramMessages, setTelegramMessages] = useState<TelegramMessage[]>([]);
-  const [githubCommits, setGithubCommits] = useState<GitHubCommit[]>([]);
+  const [socialMediaData, setSocialMediaData] = useState<SocialMediaData>({
+    discord: [],
+    twitter: [],
+    telegram: [],
+    github: []
+  });
 
   useEffect(() => {
     async function loadData() {
@@ -113,146 +122,159 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
 
-        // Exécuter toutes les requêtes en parallèle pour améliorer les performances
-        const [
-          projectResult,
-          histDataResult,
-          colorDataResult,
-          discordResult,
-          twitterResult,
-          telegramResult,
-          githubResult
-        ] = await Promise.allSettled([
-          // Fetch project details
-          supabase
-            .from('project')
-            .select('name, description')
-            .eq('id', projectId)
-            .single(),
+        // Reset social media data at the beginning
+        setSocialMediaData({
+          discord: [],
+          twitter: [],
+          telegram: [],
+          github: []
+        });
 
-          // Fetch historical data avec limite pour éviter les requêtes trop lourdes
-          supabase
-            .from('data')
-            .select('*')
-            .eq('id', projectId)
-            .order('date', { ascending: true })
-            .limit(2500), // Limite pour éviter les requêtes trop lourdes
+        // Fetch project details first
+        const { data: projectData, error: projectError } = await supabase
+          .from('project')
+          .select('name, description')
+          .eq('id', projectId)
+          .single();
 
-          // Fetch color mappings
-          supabase
-            .from('color')
-            .select('*'),
-
-          // Fetch Discord messages
-          supabase
-            .from('discord_duplicate')
-            .select('date, author, avatar, content')
-            .eq('id', projectId)
-            .order('date', { ascending: false })
-            .limit(10),
-
-          // Fetch Twitter messages
-          supabase
-            .from('twitter')
-            .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
-            .eq('id', projectId)
-            .order('date', { ascending: false })
-            .limit(10),
-
-          // Fetch Telegram messages
-          supabase
-            .from('telegram_duplicate')
-            .select('date, author, username, content, avatar')
-            .eq('id', projectId)
-            .eq('bot', false)
-            .not('author', 'eq', '')
-            .not('username', 'eq', '')
-            .not('content', 'eq', '')
-            .order('date', { ascending: false })
-            .limit(10),
-
-          // Fetch GitHub commits
-          supabase
-            .from('github')
-            .select('date, author, content, comment, avatar')
-            .eq('id', projectId)
-            .order('date', { ascending: false })
-            .limit(10)
-        ]);
-
-        // Traitement des résultats avec gestion d'erreur individuelle
-        let hasMainData = false;
-
-        // Project data
-        if (projectResult.status === 'fulfilled' && projectResult.value.data) {
-          setProjectName(projectResult.value.data.name || '');
-          setProjectDescription(projectResult.value.data.description || '');
+        if (projectError) {
+          console.error('Project fetch error:', projectError);
+        } else if (projectData) {
+          setProjectName(projectData.name || '');
+          setProjectDescription(projectData.description || '');
         }
 
-        // Historical data (critique pour le dashboard)
-        if (histDataResult.status === 'fulfilled' && histDataResult.value.data) {
-          const histData = histDataResult.value.data;
-          setHistoricalData(histData);
-          hasMainData = true;
+        // Fetch historical data
+        const { data: histData, error: histError } = await supabase
+          .from('data')
+          .select('*')
+          .eq('id', projectId)
+          .order('date', { ascending: true })
+          .limit(2500);
 
-          // Color data
-          let colorData = [];
-          if (colorDataResult.status === 'fulfilled' && colorDataResult.value.data) {
-            colorData = colorDataResult.value.data;
-          }
-
-          // Determine available metrics (non-null values)
-          const availableMetrics = new Set<string>();
-          histData.forEach(dataPoint => {
-            Object.entries(dataPoint).forEach(([key, value]) => {
-              if (value !== null && key !== 'id' && key !== 'date') {
-                availableMetrics.add(key);
-              }
-            });
-          });
-
-          // Create metrics array with colors and yAxisId
-          const metricsArray = Array.from(availableMetrics).map(key => {
-            const colorMapping = colorData?.find(c => c.metric === key);
-            return {
-              name: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-              key,
-              color: colorMapping?.color || '#000000',
-              yAxisId: key === 'closing_price' || key === 'opening_price' ? 'right' : 'left'
-            };
-          });
-
-          setMetrics(metricsArray);
-          setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
+        if (histError) {
+          console.error('Historical data fetch error:', histError);
+          throw new Error("Failed to load historical data");
         }
 
-        // Social media data (non-critique, ne bloque pas le dashboard)
-        if (discordResult.status === 'fulfilled' && discordResult.value.data) {
-          setDiscordMessages(discordResult.value.data);
-        }
-
-        if (twitterResult.status === 'fulfilled' && twitterResult.value.data) {
-          setTwitterMessages(twitterResult.value.data);
-        }
-
-        if (telegramResult.status === 'fulfilled' && telegramResult.value.data) {
-          setTelegramMessages(telegramResult.value.data);
-        }
-
-        if (githubResult.status === 'fulfilled' && githubResult.value.data) {
-          setGithubCommits(githubResult.value.data);
-        }
-
-        // Si aucune donnée principale n'est disponible, afficher une erreur
-        if (!hasMainData) {
+        if (!histData || histData.length === 0) {
           setError("No historical data available for this project");
+          return;
         }
+
+        setHistoricalData(histData);
+
+        // Fetch color mappings
+        const { data: colorData, error: colorError } = await supabase
+          .from('color')
+          .select('*');
+
+        if (colorError) {
+          console.error('Color data fetch error:', colorError);
+        }
+
+        // Determine available metrics (non-null values)
+        const availableMetrics = new Set<string>();
+        histData.forEach(dataPoint => {
+          Object.entries(dataPoint).forEach(([key, value]) => {
+            if (value !== null && key !== 'id' && key !== 'date') {
+              availableMetrics.add(key);
+            }
+          });
+        });
+
+        // Create metrics array with colors and yAxisId
+        const metricsArray = Array.from(availableMetrics).map(key => {
+          const colorMapping = colorData?.find(c => c.metric === key);
+          return {
+            name: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            key,
+            color: colorMapping?.color || '#000000',
+            yAxisId: key === 'closing_price' || key === 'opening_price' ? 'right' : 'left'
+          };
+        });
+
+        setMetrics(metricsArray);
+        setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
+
+        // Now fetch social media data sequentially to avoid race conditions
+        await loadSocialMediaData();
 
       } catch (error) {
         console.error("Error while loading data:", error);
         setError("Failed to load dashboard data. Please try again.");
       } finally {
         setLoading(false);
+      }
+    }
+
+    async function loadSocialMediaData() {
+      const newSocialData: SocialMediaData = {
+        discord: [],
+        twitter: [],
+        telegram: [],
+        github: []
+      };
+
+      try {
+        // Fetch Discord messages
+        const { data: discordData, error: discordError } = await supabase
+          .from('discord_duplicate')
+          .select('date, author, avatar, content')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        if (!discordError && discordData) {
+          newSocialData.discord = discordData;
+        }
+
+        // Fetch Twitter messages
+        const { data: twitterData, error: twitterError } = await supabase
+          .from('twitter')
+          .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        if (!twitterError && twitterData) {
+          newSocialData.twitter = twitterData;
+        }
+
+        // Fetch Telegram messages
+        const { data: telegramData, error: telegramError } = await supabase
+          .from('telegram_duplicate')
+          .select('date, author, username, content, avatar')
+          .eq('id', projectId)
+          .eq('bot', false)
+          .not('author', 'eq', '')
+          .not('username', 'eq', '')
+          .not('content', 'eq', '')
+          .order('date', { ascending: false })
+          .limit(10);
+
+        if (!telegramError && telegramData) {
+          newSocialData.telegram = telegramData;
+        }
+
+        // Fetch GitHub commits
+        const { data: githubData, error: githubError } = await supabase
+          .from('github')
+          .select('date, author, content, comment, avatar')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        if (!githubError && githubData) {
+          newSocialData.github = githubData;
+        }
+
+        // Update social media data in one go
+        setSocialMediaData(newSocialData);
+
+      } catch (error) {
+        console.error("Error loading social media data:", error);
+        // Don't throw error here as it's not critical for the main dashboard functionality
       }
     }
 
@@ -450,10 +472,10 @@ export default function Dashboard() {
       )}
 
       <SocialActivitySlider
-        discordMessages={discordMessages}
-        twitterMessages={twitterMessages}
-        telegramMessages={telegramMessages}
-        githubCommits={githubCommits}
+        discordMessages={socialMediaData.discord}
+        twitterMessages={socialMediaData.twitter}
+        telegramMessages={socialMediaData.telegram}
+        githubCommits={socialMediaData.github}
       />
     </div>
   );
