@@ -107,152 +107,172 @@ export default function Dashboard() {
   const [telegramMessages, setTelegramMessages] = useState<TelegramMessage[]>([]);
   const [githubCommits, setGithubCommits] = useState<GitHubCommit[]>([]);
 
+  const timeRanges = [
+    { label: "30d", days: 30 },
+    { label: "90d", days: 90 },
+    { label: "1y", days: 365 },
+    { label: "All", days: null },
+  ];
+
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
         setError(null);
 
-        // Exécuter toutes les requêtes en parallèle pour améliorer les performances
-        const [
-          projectResult,
-          histDataResult,
-          colorDataResult,
-          discordResult,
-          twitterResult,
-          telegramResult,
-          githubResult
-        ] = await Promise.allSettled([
-          // Fetch project details
-          supabase
-            .from('project')
-            .select('name, description')
-            .eq('id', projectId)
-            .single(),
+        // Reset all social media data at the beginning
+        setDiscordMessages([]);
+        setTwitterMessages([]);
+        setTelegramMessages([]);
+        setGithubCommits([]);
 
-          // Fetch historical data avec limite pour éviter les requêtes trop lourdes
-          supabase
-            .from('data')
-            .select('*')
-            .eq('id', projectId)
-            .order('date', { ascending: true })
-            .limit(2500), // Limite pour éviter les requêtes trop lourdes
+        // Fetch project details first
+        const { data: projectData, error: projectError } = await supabase
+          .from('project')
+          .select('name, description')
+          .eq('id', projectId)
+          .single();
 
-          // Fetch color mappings
-          supabase
-            .from('color')
-            .select('*'),
-
-          // Fetch Discord messages
-          supabase
-            .from('discord_duplicate')
-            .select('date, author, avatar, content')
-            .eq('id', projectId)
-            .order('date', { ascending: false })
-            .limit(10),
-
-          // Fetch Twitter messages
-          supabase
-            .from('twitter')
-            .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
-            .eq('id', projectId)
-            .order('date', { ascending: false })
-            .limit(10),
-
-          // Fetch Telegram messages
-          supabase
-            .from('telegram_duplicate')
-            .select('date, author, username, content, avatar')
-            .eq('id', projectId)
-            .eq('bot', false)
-            .not('author', 'eq', '')
-            .not('username', 'eq', '')
-            .not('content', 'eq', '')
-            .order('date', { ascending: false })
-            .limit(10),
-
-          // Fetch GitHub commits
-          supabase
-            .from('github')
-            .select('date, author, content, comment, avatar')
-            .eq('id', projectId)
-            .order('date', { ascending: false })
-            .limit(10)
-        ]);
-
-        // Traitement des résultats avec gestion d'erreur individuelle
-        let hasMainData = false;
-
-        // Project data
-        if (projectResult.status === 'fulfilled' && projectResult.value.data) {
-          setProjectName(projectResult.value.data.name || '');
-          setProjectDescription(projectResult.value.data.description || '');
+        if (projectError) {
+          console.error('Project fetch error:', projectError);
+        } else if (projectData) {
+          setProjectName(projectData.name || '');
+          setProjectDescription(projectData.description || '');
         }
 
-        // Historical data (critique pour le dashboard)
-        if (histDataResult.status === 'fulfilled' && histDataResult.value.data) {
-          const histData = histDataResult.value.data;
-          setHistoricalData(histData);
-          hasMainData = true;
+        // Fetch historical data
+        const { data: histData, error: histError } = await supabase
+          .from('data')
+          .select('*')
+          .eq('id', projectId)
+          .order('date', { ascending: true })
+          .limit(2500);
 
-          // Color data
-          let colorData = [];
-          if (colorDataResult.status === 'fulfilled' && colorDataResult.value.data) {
-            colorData = colorDataResult.value.data;
-          }
-
-          // Determine available metrics (non-null values)
-          const availableMetrics = new Set<string>();
-          histData.forEach(dataPoint => {
-            Object.entries(dataPoint).forEach(([key, value]) => {
-              if (value !== null && key !== 'id' && key !== 'date') {
-                availableMetrics.add(key);
-              }
-            });
-          });
-
-          // Create metrics array with colors and yAxisId
-          const metricsArray = Array.from(availableMetrics).map(key => {
-            const colorMapping = colorData?.find(c => c.metric === key);
-            return {
-              name: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-              key,
-              color: colorMapping?.color || '#000000',
-              yAxisId: key === 'closing_price' || key === 'opening_price' ? 'right' : 'left'
-            };
-          });
-
-          setMetrics(metricsArray);
-          setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
+        if (histError) {
+          console.error('Historical data fetch error:', histError);
+          throw new Error("Failed to load historical data");
         }
 
-        // Social media data (non-critique, ne bloque pas le dashboard)
-        if (discordResult.status === 'fulfilled' && discordResult.value.data) {
-          setDiscordMessages(discordResult.value.data);
-        }
-
-        if (twitterResult.status === 'fulfilled' && twitterResult.value.data) {
-          setTwitterMessages(twitterResult.value.data);
-        }
-
-        if (telegramResult.status === 'fulfilled' && telegramResult.value.data) {
-          setTelegramMessages(telegramResult.value.data);
-        }
-
-        if (githubResult.status === 'fulfilled' && githubResult.value.data) {
-          setGithubCommits(githubResult.value.data);
-        }
-
-        // Si aucune donnée principale n'est disponible, afficher une erreur
-        if (!hasMainData) {
+        if (!histData || histData.length === 0) {
           setError("No historical data available for this project");
+          return;
         }
+
+        setHistoricalData(histData);
+
+        // Fetch color mappings
+        const { data: colorData, error: colorError } = await supabase
+          .from('color')
+          .select('*');
+
+        if (colorError) {
+          console.error('Color data fetch error:', colorError);
+        }
+
+        // Determine available metrics (non-null values)
+        const availableMetrics = new Set<string>();
+        histData.forEach(dataPoint => {
+          Object.entries(dataPoint).forEach(([key, value]) => {
+            if (value !== null && key !== 'id' && key !== 'date') {
+              availableMetrics.add(key);
+            }
+          });
+        });
+
+        // Create metrics array with colors and yAxisId
+        const metricsArray = Array.from(availableMetrics).map(key => {
+          const colorMapping = colorData?.find(c => c.metric === key);
+          return {
+            name: key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            key,
+            color: colorMapping?.color || '#000000',
+            yAxisId: key === 'closing_price' || key === 'opening_price' ? 'right' : 'left'
+          };
+        });
+
+        setMetrics(metricsArray);
+        setSelectedMetrics(['twitter_post', 'twitter_user', 'twitter_retweet', 'closing_price']);
+
+        // Now fetch social media data with proper error handling
+        await loadSocialMediaData();
 
       } catch (error) {
         console.error("Error while loading data:", error);
         setError("Failed to load dashboard data. Please try again.");
       } finally {
         setLoading(false);
+      }
+    }
+
+    async function loadSocialMediaData() {
+      try {
+        // Fetch Discord messages
+        const discordPromise = supabase
+          .from('discord_duplicate')
+          .select('date, author, avatar, content')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        // Fetch Twitter messages
+        const twitterPromise = supabase
+          .from('twitter')
+          .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        // Fetch Telegram messages
+        const telegramPromise = supabase
+          .from('telegram_duplicate')
+          .select('date, author, username, content, avatar')
+          .eq('id', projectId)
+          .eq('bot', false)
+          .not('author', 'eq', '')
+          .not('username', 'eq', '')
+          .not('content', 'eq', '')
+          .order('date', { ascending: false })
+          .limit(10);
+
+        // Fetch GitHub commits
+        const githubPromise = supabase
+          .from('github')
+          .select('date, author, content, comment, avatar')
+          .eq('id', projectId)
+          .order('date', { ascending: false })
+          .limit(10);
+
+        // Execute all promises and handle results
+        const [discordResult, twitterResult, telegramResult, githubResult] = await Promise.allSettled([
+          discordPromise,
+          twitterPromise,
+          telegramPromise,
+          githubPromise
+        ]);
+
+        // Process Discord data
+        if (discordResult.status === 'fulfilled' && discordResult.value.data) {
+          setDiscordMessages(discordResult.value.data);
+        }
+
+        // Process Twitter data
+        if (twitterResult.status === 'fulfilled' && twitterResult.value.data) {
+          setTwitterMessages(twitterResult.value.data);
+        }
+
+        // Process Telegram data
+        if (telegramResult.status === 'fulfilled' && telegramResult.value.data) {
+          setTelegramMessages(telegramResult.value.data);
+        }
+
+        // Process GitHub data
+        if (githubResult.status === 'fulfilled' && githubResult.value.data) {
+          setGithubCommits(githubResult.value.data);
+        }
+
+      } catch (error) {
+        console.error("Error loading social media data:", error);
+        // Don't throw error here as it's not critical for the main dashboard functionality
       }
     }
 
@@ -335,13 +355,6 @@ export default function Dashboard() {
         : [...prev, metricKey]
     );
   };
-
-  const timeRanges = [
-    { label: "30d", days: 30 },
-    { label: "90d", days: 90 },
-    { label: "1y", days: 365 },
-    { label: "All", days: null },
-  ];
 
   return (
     <div className="space-y-6">
