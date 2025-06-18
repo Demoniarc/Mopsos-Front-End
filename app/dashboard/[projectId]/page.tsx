@@ -112,7 +112,7 @@ export default function Dashboard() {
   // Social data loading states
   const [socialDataLoading, setSocialDataLoading] = useState(false);
   const [socialDataLoaded, setSocialDataLoaded] = useState(false);
-  const [socialDataAttempts, setSocialDataAttempts] = useState(0);
+  const [socialDataError, setSocialDataError] = useState<string | null>(null);
 
   const timeRanges = [
     { label: "30d", days: 30 },
@@ -121,15 +121,29 @@ export default function Dashboard() {
     { label: "All", days: null },
   ];
 
-  // Function to load individual social media platform data
-  const loadPlatformData = useCallback(async (platform: string, query: any) => {
+  // Enhanced function to load individual social media platform data with timeout handling
+  const loadPlatformData = useCallback(async (platform: string, queryBuilder: any, timeout = 10000) => {
     try {
       console.log(`Loading ${platform} data...`);
-      const { data, error } = await query;
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`${platform} query timeout`)), timeout);
+      });
+      
+      // Race between the query and timeout
+      const result = await Promise.race([queryBuilder, timeoutPromise]);
+      
+      const { data, error } = result as any;
       
       if (error) {
         console.error(`${platform} error:`, error);
-        return [];
+        // Don't throw for timeout errors, just return empty array
+        if (error.code === '57014' || error.message?.includes('timeout')) {
+          console.warn(`${platform} query timed out, skipping...`);
+          return [];
+        }
+        throw error;
       }
       
       if (!data || !Array.isArray(data)) {
@@ -139,19 +153,24 @@ export default function Dashboard() {
       
       console.log(`${platform} loaded successfully: ${data.length} items`);
       return data;
-    } catch (err) {
+    } catch (err: any) {
       console.error(`${platform} exception:`, err);
+      // For timeout errors, return empty array instead of failing
+      if (err.message?.includes('timeout') || err.code === '57014') {
+        console.warn(`${platform} timed out, returning empty data`);
+        return [];
+      }
       return [];
     }
   }, []);
 
-  // Function to load all social media data with sequential loading for better reliability
+  // Optimized function to load all social media data with better error handling
   const loadSocialMediaData = useCallback(async () => {
     if (!projectId || socialDataLoading) return;
     
     console.log('Starting social media data load...');
     setSocialDataLoading(true);
-    setSocialDataAttempts(prev => prev + 1);
+    setSocialDataError(null);
     
     try {
       // Reset all data first
@@ -160,75 +179,97 @@ export default function Dashboard() {
       setTelegramMessages([]);
       setGithubCommits([]);
 
-      // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Load platforms in parallel with individual timeout handling
+      const [discordData, twitterData, telegramData, githubData] = await Promise.allSettled([
+        // Discord with optimized query and shorter timeout
+        loadPlatformData('Discord', 
+          supabase
+            .from('discord_duplicate')
+            .select('date, author, avatar, content')
+            .eq('id', projectId)
+            .not('content', 'eq', '')
+            .not('author', 'eq', '')
+            .order('date', { ascending: false })
+            .limit(5), // Reduced limit for faster query
+          8000 // Shorter timeout
+        ),
+        
+        // Twitter
+        loadPlatformData('Twitter',
+          supabase
+            .from('twitter')
+            .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
+            .eq('id', projectId)
+            .not('content', 'eq', '')
+            .not('author', 'eq', '')
+            .order('date', { ascending: false })
+            .limit(10),
+          10000
+        ),
+        
+        // Telegram
+        loadPlatformData('Telegram',
+          supabase
+            .from('telegram_duplicate')
+            .select('date, author, username, content, avatar')
+            .eq('id', projectId)
+            .eq('bot', false)
+            .not('author', 'eq', '')
+            .not('username', 'eq', '')
+            .not('content', 'eq', '')
+            .order('date', { ascending: false })
+            .limit(10),
+          10000
+        ),
+        
+        // GitHub
+        loadPlatformData('GitHub',
+          supabase
+            .from('github')
+            .select('date, author, content, comment, avatar')
+            .eq('id', projectId)
+            .not('content', 'eq', '')
+            .not('author', 'eq', '')
+            .order('date', { ascending: false })
+            .limit(10),
+          10000
+        )
+      ]);
       
-      // Load each platform sequentially to avoid overwhelming the database
-      const discordData = await loadPlatformData('Discord', 
-        supabase
-          .from('discord_duplicate')
-          .select('date, author, avatar, content')
-          .eq('id', projectId)
-          .order('date', { ascending: false })
-          .limit(10)
-      );
+      // Process results, handling both successful and failed promises
+      const processResult = (result: PromiseSettledResult<any>) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          console.warn('Platform data load failed:', result.reason);
+          return [];
+        }
+      };
       
-      // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 100));
+      const finalDiscordData = processResult(discordData);
+      const finalTwitterData = processResult(twitterData);
+      const finalTelegramData = processResult(telegramData);
+      const finalGithubData = processResult(githubData);
       
-      const twitterData = await loadPlatformData('Twitter',
-        supabase
-          .from('twitter')
-          .select('date, author, author_id, avatar, content, like, retweet, quote, comment')
-          .eq('id', projectId)
-          .order('date', { ascending: false })
-          .limit(10)
-      );
-      
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const telegramData = await loadPlatformData('Telegram',
-        supabase
-          .from('telegram_duplicate')
-          .select('date, author, username, content, avatar')
-          .eq('id', projectId)
-          .eq('bot', false)
-          .not('author', 'eq', '')
-          .not('username', 'eq', '')
-          .not('content', 'eq', '')
-          .order('date', { ascending: false })
-          .limit(10)
-      );
-      
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const githubData = await loadPlatformData('GitHub',
-        supabase
-          .from('github')
-          .select('date, author, content, comment, avatar')
-          .eq('id', projectId)
-          .order('date', { ascending: false })
-          .limit(10)
-      );
-      
-      // Set all data at once to avoid partial updates
+      // Set all data at once
       console.log('Setting social media data:', {
-        discord: discordData.length,
-        twitter: twitterData.length,
-        telegram: telegramData.length,
-        github: githubData.length
+        discord: finalDiscordData.length,
+        twitter: finalTwitterData.length,
+        telegram: finalTelegramData.length,
+        github: finalGithubData.length
       });
       
-      setDiscordMessages(discordData);
-      setTwitterMessages(twitterData);
-      setTelegramMessages(telegramData);
-      setGithubCommits(githubData);
+      setDiscordMessages(finalDiscordData);
+      setTwitterMessages(finalTwitterData);
+      setTelegramMessages(finalTelegramData);
+      setGithubCommits(finalGithubData);
       
       setSocialDataLoaded(true);
-      console.log('Social media data loading completed successfully');
+      console.log('Social media data loading completed');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Critical error loading social media data:", error);
+      setSocialDataError("Some social media data could not be loaded due to server timeouts");
     } finally {
       setSocialDataLoading(false);
     }
@@ -243,7 +284,6 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
         setSocialDataLoaded(false);
-        setSocialDataAttempts(0);
 
         // Fetch project details first
         const { data: projectData, error: projectError } = await supabase
@@ -259,7 +299,7 @@ export default function Dashboard() {
           setProjectDescription(projectData.description || '');
         }
 
-        // Fetch historical data
+        // Fetch historical data with timeout
         const { data: histData, error: histError } = await supabase
           .from('data')
           .select('*')
@@ -325,27 +365,15 @@ export default function Dashboard() {
 
   // Social media data loading effect - triggered after main data is loaded
   useEffect(() => {
-    if (projectId && !loading && !socialDataLoaded && socialDataAttempts < 3) {
+    if (projectId && !loading && !socialDataLoaded && !socialDataLoading) {
       // Wait a bit for the main data to settle, then load social data
       const timer = setTimeout(() => {
         loadSocialMediaData();
-      }, 200);
+      }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [projectId, loading, socialDataLoaded, socialDataAttempts, loadSocialMediaData]);
-
-  // Auto-retry mechanism for social data if it fails
-  useEffect(() => {
-    if (!socialDataLoading && !socialDataLoaded && socialDataAttempts > 0 && socialDataAttempts < 3) {
-      console.log(`Auto-retrying social data load (attempt ${socialDataAttempts + 1})`);
-      const retryTimer = setTimeout(() => {
-        loadSocialMediaData();
-      }, 2000 * socialDataAttempts); // Increasing delay
-      
-      return () => clearTimeout(retryTimer);
-    }
-  }, [socialDataLoading, socialDataLoaded, socialDataAttempts, loadSocialMediaData]);
+  }, [projectId, loading, socialDataLoaded, socialDataLoading, loadSocialMediaData]);
 
   // Filtered data effect
   useEffect(() => {
@@ -371,7 +399,7 @@ export default function Dashboard() {
   // Manual retry function
   const retrySocialMediaData = () => {
     setSocialDataLoaded(false);
-    setSocialDataAttempts(0);
+    setSocialDataError(null);
     loadSocialMediaData();
   };
 
@@ -550,15 +578,27 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+      ) : socialDataError ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Social Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center space-y-4">
+              <p className="text-muted-foreground">{socialDataError}</p>
+              <Button onClick={retrySocialMediaData} variant="outline">
+                Retry Loading Social Data
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        <>
-          <SocialActivitySlider
-            discordMessages={discordMessages}
-            twitterMessages={twitterMessages}
-            telegramMessages={telegramMessages}
-            githubCommits={githubCommits}
-          />
-        </>
+        <SocialActivitySlider
+          discordMessages={discordMessages}
+          twitterMessages={twitterMessages}
+          telegramMessages={telegramMessages}
+          githubCommits={githubCommits}
+        />
       )}
     </div>
   );
