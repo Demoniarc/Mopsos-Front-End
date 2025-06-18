@@ -190,7 +190,7 @@ export default function Dashboard() {
             .not('content', 'eq', '')
             .not('author', 'eq', '')
             .order('date', { ascending: false })
-            .limit(5), // Reduced limit for faster query
+            .limit(10), // Reduced limit for faster query
           8000 // Shorter timeout
         ),
         
