@@ -191,7 +191,7 @@ export default function Dashboard() {
             .not('author', 'eq', '')
             .order('date', { ascending: false })
             .limit(10), // Reduced limit for faster query
-          8000 // Shorter timeout
+          20000 // Shorter timeout
         ),
         
         // Twitter
@@ -204,7 +204,7 @@ export default function Dashboard() {
             .not('author', 'eq', '')
             .order('date', { ascending: false })
             .limit(10),
-          10000
+          20000
         ),
         
         // Telegram
@@ -219,7 +219,7 @@ export default function Dashboard() {
             .not('content', 'eq', '')
             .order('date', { ascending: false })
             .limit(10),
-          10000
+          20000
         ),
         
         // GitHub
@@ -232,7 +232,7 @@ export default function Dashboard() {
             .not('author', 'eq', '')
             .order('date', { ascending: false })
             .limit(10),
-          10000
+          20000
         )
       ]);
       
