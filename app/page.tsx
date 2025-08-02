@@ -188,10 +188,52 @@ export default function Home() {
       <div className="text-center space-y-4 py-8">
         <h1 className="text-3xl md:text-5xl font-bold leading-tight pb-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Crypto Social Analytics
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Track and analyze social metrics across {totalProjects} crypto projects featuring {totalPosts.toLocaleString()} curated posts.
-        </p>
+        </h1>        
+        {/* CTA Section */}
+        <div className="mt-8 space-y-4">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Want to understand and grow your crypto community? Get your project listed on Mopsos AI and start tracking engagement across Twitter, Discord, Telegram, and Reddit.
+          </p>
+          
+          <div className="pt-2">
+            <p className="text-base font-medium mb-4">
+              👉 Click below to get listed.
+            </p>
+          </div>
+          
+          <div className="pt-2">
+            <Link 
+              href="https://forms.gle/phzyWDEfKT3QeYLL8" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block"
+            >
+              <button className="group relative px-8 py-4 text-lg font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-purple-500">
+                {/* Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:from-blue-500 group-hover:to-purple-500"></div>
+                
+                {/* Animated Shine Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
+                
+                {/* Button Text */}
+                <span className="relative z-10 flex items-center gap-2">
+                  Get Listed
+                  <svg 
+                    className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+                
+                {/* Pulse Animation */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-20 animate-pulse"></div>
+              </button>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -439,5 +481,3 @@ export default function Home() {
     </div>
   )
 }
-
-
