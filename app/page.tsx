@@ -186,7 +186,10 @@ export default function Home() {
     <div className="space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-4 py-8">
-        <h1 className="text-3xl md:text-5xl font-bold leading-tight pb-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1
+            className="text-3xl md:text-5xl font-bold leading-tight pb-1 bg-clip-text text-transparent"
+            style={{ backgroundImage: "linear-gradient(to right, #ff7e5f, #feb47b)" }}
+        >
           Crypto Social Analytics
         </h1>        
         {/* CTA Section */}
