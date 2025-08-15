@@ -211,9 +211,15 @@ export default function Home() {
               rel="noopener noreferrer"
               className="inline-block"
             >
-              <button className="group relative px-8 py-4 text-lg font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-purple-500">
+              <button className="group relative px-8 py-4 text-lg font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#9796f0] dark:focus:ring-[#fbc7d4]">
+                
                 {/* Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:from-blue-500 group-hover:to-purple-500"></div>
+                <div 
+                  className="absolute inset-0 transition-all duration-300 group-hover:opacity-90"
+                  style={{
+                    backgroundImage: "linear-gradient(to right, #9796f0, #fbc7d4)"
+                  }}
+                ></div>
                 
                 {/* Animated Shine Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
@@ -232,7 +238,12 @@ export default function Home() {
                 </span>
                 
                 {/* Pulse Animation */}
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-20 animate-pulse"></div>
+                <div 
+                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-20 animate-pulse"
+                  style={{
+                    backgroundImage: "linear-gradient(to right, #9796f0, #fbc7d4)"
+                  }}
+                ></div>
               </button>
             </Link>
           </div>
