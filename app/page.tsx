@@ -188,7 +188,7 @@ export default function Home() {
       <div className="text-center space-y-4 py-8">
         <h1
             className="text-3xl md:text-5xl font-bold leading-tight pb-1 bg-clip-text text-transparent"
-            style={{ backgroundImage: "linear-gradient(to right, #ff7e5f, #feb47b)" }}
+            style={{ backgroundImage: "linear-gradient(to right, #9796f0, #fbc7d4)" }}
         >
           Crypto Social Analytics
         </h1>        
