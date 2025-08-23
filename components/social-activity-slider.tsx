@@ -171,6 +171,10 @@ export function SocialActivitySlider({
               src={message.avatar}
               alt={`${message.author}'s avatar`}
               className="h-10 w-10 rounded-full"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/twitter_pfp.png';
+              }}
             />
           </div>
           <div className="flex-1 min-w-0 space-y-1">
@@ -256,6 +260,10 @@ export function SocialActivitySlider({
               src={message.avatar}
               alt={`${message.author}'s avatar`}
               className="h-10 w-10 rounded-full"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/telegram_pfp.png';
+              }}
             />
           </div>
           <div className="flex-1 min-w-0 space-y-1">
