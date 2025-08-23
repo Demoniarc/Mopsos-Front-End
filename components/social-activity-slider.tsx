@@ -56,6 +56,53 @@ interface SocialActivitySliderProps {
   githubCommits: GitHubCommit[]
 }
 
+// Component for handling avatar images with instant fallback
+const AvatarImage = ({ src, alt, platform, className }: { 
+  src: string, 
+  alt: string, 
+  platform: 'twitter' | 'telegram' | 'discord' | 'github',
+  className: string 
+}) => {
+  const [imageSrc, setImageSrc] = useState(() => {
+    // Start with fallback image for twitter and telegram
+    if (platform === 'twitter') return '/twitter_pfp.png'
+    if (platform === 'telegram') return '/telegram_pfp.png'
+    return src // For discord and github, use original src
+  })
+  const [hasTriedOriginal, setHasTriedOriginal] = useState(false)
+
+  useEffect(() => {
+    // For twitter and telegram, try to load the original image after component mounts
+    if ((platform === 'twitter' || platform === 'telegram') && !hasTriedOriginal && src) {
+      const img = new Image()
+      img.onload = () => {
+        setImageSrc(src)
+      }
+      img.onerror = () => {
+        // Keep the fallback image
+      }
+      img.src = src
+      setHasTriedOriginal(true)
+    }
+  }, [src, platform, hasTriedOriginal])
+
+  const handleError = () => {
+    if (platform === 'twitter') {
+      setImageSrc('/twitter_pfp.png')
+    } else if (platform === 'telegram') {
+      setImageSrc('/telegram_pfp.png')
+    }
+  }
+
+  return (
+    <img
+      src={imageSrc}
+      alt={alt}
+      className={className}
+      onError={handleError}
+    />
+  )
+}
 export function SocialActivitySlider({
   discordMessages,
   twitterMessages,
@@ -167,9 +214,10 @@ export function SocialActivitySlider({
       {messages.map((message, index) => (
         <div key={index} className="flex space-x-4">
           <div className="flex-shrink-0">
-            <img
+            <AvatarImage
               src={message.avatar}
               alt={`${message.author}'s avatar`}
+              platform="twitter"
               className="h-10 w-10 rounded-full"
             />
           </div>
@@ -227,9 +275,10 @@ export function SocialActivitySlider({
       {messages.map((message, index) => (
         <div key={index} className="flex space-x-4">
           <div className="flex-shrink-0">
-            <img
+            <AvatarImage
               src={`/discord_avatar/${message.avatar}`}
               alt={`${message.author}'s avatar`}
+              platform="discord"
               className="h-10 w-10 rounded-full"
             />
           </div>
@@ -252,9 +301,10 @@ export function SocialActivitySlider({
       {messages.map((message, index) => (
         <div key={index} className="flex space-x-4">
           <div className="flex-shrink-0">
-            <img
+            <AvatarImage
               src={message.avatar}
               alt={`${message.author}'s avatar`}
+              platform="telegram"
               className="h-10 w-10 rounded-full"
             />
           </div>
@@ -278,9 +328,10 @@ export function SocialActivitySlider({
       {commits.map((commit, index) => (
         <div key={index} className="flex space-x-4">
           <div className="flex-shrink-0">
-            <img
+            <AvatarImage
               src={commit.avatar}
               alt={`${commit.author}'s avatar`}
+              platform="github"
               className="h-10 w-10 rounded-full"
             />
           </div>
