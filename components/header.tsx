@@ -52,6 +52,9 @@ export default function Header() {
               <Link href="/dictionary" className="text-sm font-medium">
                 Data Dictionary
               </Link>
+              <Link href="/compare" className="text-sm font-medium">
+                Compare
+              </Link>
               <Link href="/api" className="text-sm font-medium">
                 API
               </Link>
@@ -100,6 +103,9 @@ export default function Header() {
                   <SearchBar />
                   <Link href="/dictionary" className="text-sm font-medium">
                     Data Dictionary
+                  </Link>
+                  <Link href="/compare" className="text-sm font-medium">
+                    Compare
                   </Link>
                   <Link href="/api" className="text-sm font-medium">
                     API
