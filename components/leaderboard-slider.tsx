@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
@@ -54,9 +54,6 @@ interface LeaderboardSliderProps {
 export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
   const { theme } = useTheme()
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [translateX, setTranslateX] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -67,7 +64,7 @@ export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
   const [githubAuthors, setGithubAuthors] = useState<GitHubAuthor[]>([])
 
   // Calculate date range (yesterday and 30 days before)
-  const getDateRange = () => {
+  const getDateRange = useCallback(() => {
     const endDate = new Date()
     endDate.setDate(endDate.getDate() - 1) // Yesterday
     
@@ -78,85 +75,85 @@ export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
       start_date: startDate.toISOString().split('T')[0],
       end_date: endDate.toISOString().split('T')[0]
     }
-  }
+  }, [])
 
   // Load leaderboard data
-  useEffect(() => {
-    const loadLeaderboardData = async () => {
-      if (!projectId || loading) return
+  const loadLeaderboardData = useCallback(async () => {
+    if (!projectId || loading) return
+    
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { start_date, end_date } = getDateRange()
       
-      setLoading(true)
-      setError(null)
+      // Load all platforms in parallel
+      const [twitterResult, discordResult, telegramResult, githubResult] = await Promise.allSettled([
+        supabase.rpc('get_top_twitter_authors', {
+          project_id: projectId,
+          start_date,
+          end_date
+        }),
+        supabase.rpc('get_top_discord_authors', {
+          project_id: projectId,
+          start_date,
+          end_date
+        }),
+        supabase.rpc('get_top_telegram_authors', {
+          project_id: projectId,
+          start_date,
+          end_date
+        }),
+        supabase.rpc('get_top_github_authors', {
+          project_id: projectId,
+          start_date,
+          end_date
+        })
+      ])
       
-      try {
-        const { start_date, end_date } = getDateRange()
-        
-        // Load all platforms in parallel
-        const [twitterResult, discordResult, telegramResult, githubResult] = await Promise.allSettled([
-          supabase.rpc('get_top_twitter_authors', {
-            project_id: projectId,
-            start_date,
-            end_date
-          }),
-          supabase.rpc('get_top_discord_authors', {
-            project_id: projectId,
-            start_date,
-            end_date
-          }),
-          supabase.rpc('get_top_telegram_authors', {
-            project_id: projectId,
-            start_date,
-            end_date
-          }),
-          supabase.rpc('get_top_github_authors', {
-            project_id: projectId,
-            start_date,
-            end_date
-          })
-        ])
-        
-        // Process Twitter results
-        if (twitterResult.status === 'fulfilled' && !twitterResult.value.error) {
-          setTwitterAuthors(twitterResult.value.data || [])
-        } else {
-          console.warn('Twitter leaderboard failed:', twitterResult)
-          setTwitterAuthors([])
-        }
-        
-        // Process Discord results
-        if (discordResult.status === 'fulfilled' && !discordResult.value.error) {
-          setDiscordAuthors(discordResult.value.data || [])
-        } else {
-          console.warn('Discord leaderboard failed:', discordResult)
-          setDiscordAuthors([])
-        }
-        
-        // Process Telegram results
-        if (telegramResult.status === 'fulfilled' && !telegramResult.value.error) {
-          setTelegramAuthors(telegramResult.value.data || [])
-        } else {
-          console.warn('Telegram leaderboard failed:', telegramResult)
-          setTelegramAuthors([])
-        }
-        
-        // Process GitHub results
-        if (githubResult.status === 'fulfilled' && !githubResult.value.error) {
-          setGithubAuthors(githubResult.value.data || [])
-        } else {
-          console.warn('GitHub leaderboard failed:', githubResult)
-          setGithubAuthors([])
-        }
-        
-      } catch (error) {
-        console.error("Error loading leaderboard data:", error)
-        setError("Failed to load leaderboard data")
-      } finally {
-        setLoading(false)
+      // Process Twitter results
+      if (twitterResult.status === 'fulfilled' && !twitterResult.value.error) {
+        setTwitterAuthors(twitterResult.value.data || [])
+      } else {
+        console.warn('Twitter leaderboard failed:', twitterResult)
+        setTwitterAuthors([])
       }
+      
+      // Process Discord results
+      if (discordResult.status === 'fulfilled' && !discordResult.value.error) {
+        setDiscordAuthors(discordResult.value.data || [])
+      } else {
+        console.warn('Discord leaderboard failed:', discordResult)
+        setDiscordAuthors([])
+      }
+      
+      // Process Telegram results
+      if (telegramResult.status === 'fulfilled' && !telegramResult.value.error) {
+        setTelegramAuthors(telegramResult.value.data || [])
+      } else {
+        console.warn('Telegram leaderboard failed:', telegramResult)
+        setTelegramAuthors([])
+      }
+      
+      // Process GitHub results
+      if (githubResult.status === 'fulfilled' && !githubResult.value.error) {
+        setGithubAuthors(githubResult.value.data || [])
+      } else {
+        console.warn('GitHub leaderboard failed:', githubResult)
+        setGithubAuthors([])
+      }
+      
+    } catch (error) {
+      console.error("Error loading leaderboard data:", error)
+      setError("Failed to load leaderboard data")
+    } finally {
+      setLoading(false)
     }
+  }, [projectId, loading, getDateRange])
 
+  useEffect(() => {
     loadLeaderboardData()
-  }, [projectId])
+  }, [loadLeaderboardData])
 
   // Define platforms with their data
   const allPlatforms: Platform[] = [
@@ -219,45 +216,17 @@ export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
 
   const handlePlatformClick = (index: number) => {
     setCurrentSlide(index)
-    setTranslateX(-index * 100)
   }
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true)
-    setStartX(e.clientX)
+  const handlePrevious = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide(currentSlide - 1)
+    }
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return
-    
-    const currentX = e.clientX
-    const diff = currentX - startX
-    const newTranslateX = -currentSlide * 100 + (diff / window.innerWidth) * 100
-    setTranslateX(newTranslateX)
-  }
-
-  const handleMouseUp = (e: React.MouseEvent) => {
-    if (!isDragging) return
-    
-    setIsDragging(false)
-    const currentX = e.clientX
-    const diff = currentX - startX
-    const threshold = 50
-    
-    if (Math.abs(diff) > threshold) {
-      if (diff > 0 && currentSlide > 0) {
-        const newSlide = currentSlide - 1
-        setCurrentSlide(newSlide)
-        setTranslateX(-newSlide * 100)
-      } else if (diff < 0 && currentSlide < availablePlatforms.length - 1) {
-        const newSlide = currentSlide + 1
-        setCurrentSlide(newSlide)
-        setTranslateX(-newSlide * 100)
-      } else {
-        setTranslateX(-currentSlide * 100)
-      }
-    } else {
-      setTranslateX(-currentSlide * 100)
+  const handleNext = () => {
+    if (currentSlide < availablePlatforms.length - 1) {
+      setCurrentSlide(currentSlide + 1)
     }
   }
 
@@ -398,9 +367,9 @@ export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+            <div className="h-32 bg-muted rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -451,26 +420,12 @@ export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div 
-          className="overflow-hidden cursor-grab active:cursor-grabbing"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          <div 
-            className="flex transition-transform duration-300 ease-out"
-            style={{ 
-              transform: `translateX(${translateX}%)`,
-              width: `${availablePlatforms.length * 100}%`
-            }}
-          >
-            {availablePlatforms.map((platform, index) => (
-              <div key={platform.id} className="w-full flex-shrink-0 px-2">
-                {renderContent(platform)}
-              </div>
-            ))}
-          </div>
+        <div className="overflow-hidden">
+          {availablePlatforms.length > 0 && (
+            <div className="w-full">
+              {renderContent(availablePlatforms[currentSlide])}
+            </div>
+          )}
         </div>
         
         {/* Dots indicator */}
@@ -485,6 +440,28 @@ export function LeaderboardSlider({ projectId }: LeaderboardSliderProps) {
                 onClick={() => handlePlatformClick(index)}
               />
             ))}
+          </div>
+        )}
+        
+        {/* Navigation arrows for larger screens */}
+        {availablePlatforms.length > 1 && (
+          <div className="hidden md:flex justify-between items-center mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevious}
+              disabled={currentSlide === 0}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNext}
+              disabled={currentSlide === availablePlatforms.length - 1}
+            >
+              Next
+            </Button>
           </div>
         )}
       </CardContent>
