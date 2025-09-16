@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { SocialActivitySlider } from "@/components/social-activity-slider";
+import { CommunityLeaderboard } from "@/components/community-leaderboard";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 
@@ -563,6 +564,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Community Leaderboard */}
+      <CommunityLeaderboard projectId={projectId as string} />
 
       {/* Social Activity Section with improved loading and error handling */}
       {socialDataLoading ? (
