@@ -464,17 +464,21 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        {projectUrl && (
-          <div className="w-12 h-12 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full overflow-hidden">
-              <img
-                src={projectUrl}
-                alt={`${projectName} logo`}
-                className="w-full h-full object-cover scale-102"
-              />
-            </div>
+        <div className="w-12 h-12 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full overflow-hidden">
+            <img
+              src={`/${projectId}.png`}
+              alt={`${projectName || projectId} logo`}
+              className="w-full h-full object-cover scale-102"
+              onError={(e) => {
+                // Fallback to projectUrl if local image fails
+                if (projectUrl) {
+                  (e.target as HTMLImageElement).src = projectUrl;
+                }
+              }}
+            />
           </div>
-        )}
+        </div>
         <h1 className="text-2xl md:text-3xl font-bold capitalize">
           {projectName || 'Project'} dashboard
         </h1>
