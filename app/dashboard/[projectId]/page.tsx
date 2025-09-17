@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { SocialActivitySlider } from "@/components/social-activity-slider";
+import { CommunityLeaderboard } from "@/components/community-leaderboard";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 
@@ -37,7 +38,7 @@ interface DataPoint {
 interface Project {
   id: string;
   name: string;
-  logo: string;
+  url: string;
   description: string;
 }
 
@@ -101,6 +102,7 @@ export default function Dashboard() {
   const [selectedRange, setSelectedRange] = useState("30d");
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
+  const [projectUrl, setProjectUrl] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
   
   // Social media data states
@@ -288,7 +290,7 @@ export default function Dashboard() {
         // Fetch project details first
         const { data: projectData, error: projectError } = await supabase
           .from('project')
-          .select('name, description')
+          .select('name, description, url')
           .eq('id', projectId)
           .single();
 
@@ -296,6 +298,7 @@ export default function Dashboard() {
           console.error('Project fetch error:', projectError);
         } else if (projectData) {
           setProjectName(projectData.name || '');
+          setProjectUrl(projectData.url || '');
           setProjectDescription(projectData.description || '');
         }
 
@@ -460,9 +463,26 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold capitalize">
-        {projectName || 'Project'} dashboard
-      </h1>
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full overflow-hidden">
+            <img
+              src={`/${projectId}.png`}
+              alt={`${projectName || projectId} logo`}
+              className="w-full h-full object-cover scale-102"
+              onError={(e) => {
+                // Fallback to projectUrl if local image fails
+                if (projectUrl) {
+                  (e.target as HTMLImageElement).src = projectUrl;
+                }
+              }}
+            />
+          </div>
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold capitalize">
+          {projectName || 'Project'} dashboard
+        </h1>
+      </div>
 
       <Card className="w-full">
         <CardHeader>
@@ -563,6 +583,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Community Leaderboard */}
+      <CommunityLeaderboard projectId={projectId as string} />
 
       {/* Social Activity Section with improved loading and error handling */}
       {socialDataLoading ? (
