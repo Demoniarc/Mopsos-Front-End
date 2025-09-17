@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -468,13 +467,10 @@ export default function Dashboard() {
         {projectUrl && (
           <div className="w-12 h-12 flex items-center justify-center">
             <div className="w-12 h-12 rounded-full overflow-hidden">
-              <Image
+              <img
                 src={projectUrl}
                 alt={`${projectName} logo`}
-                width={48}
-                height={48}
                 className="w-full h-full object-cover scale-102"
-                sizes="48px"
               />
             </div>
           </div>
