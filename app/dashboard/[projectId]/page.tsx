@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -38,7 +39,7 @@ interface DataPoint {
 interface Project {
   id: string;
   name: string;
-  logo: string;
+  url: string;
   description: string;
 }
 
@@ -102,6 +103,7 @@ export default function Dashboard() {
   const [selectedRange, setSelectedRange] = useState("30d");
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [projectName, setProjectName] = useState<string>("");
+  const [projectUrl, setProjectUrl] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
   
   // Social media data states
@@ -289,7 +291,7 @@ export default function Dashboard() {
         // Fetch project details first
         const { data: projectData, error: projectError } = await supabase
           .from('project')
-          .select('name, description')
+          .select('name, description, url')
           .eq('id', projectId)
           .single();
 
@@ -297,6 +299,7 @@ export default function Dashboard() {
           console.error('Project fetch error:', projectError);
         } else if (projectData) {
           setProjectName(projectData.name || '');
+          setProjectUrl(projectData.url || '');
           setProjectDescription(projectData.description || '');
         }
 
@@ -461,9 +464,25 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold capitalize">
-        {projectName || 'Project'} dashboard
-      </h1>
+      <div className="flex items-center space-x-4">
+        {projectUrl && (
+          <div className="w-12 h-12 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full overflow-hidden">
+              <Image
+                src={projectUrl}
+                alt={`${projectName} logo`}
+                width={48}
+                height={48}
+                className="w-full h-full object-cover scale-102"
+                sizes="48px"
+              />
+            </div>
+          </div>
+        )}
+        <h1 className="text-2xl md:text-3xl font-bold capitalize">
+          {projectName || 'Project'} dashboard
+        </h1>
+      </div>
 
       <Card className="w-full">
         <CardHeader>
