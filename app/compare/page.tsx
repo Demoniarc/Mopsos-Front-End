@@ -77,6 +77,7 @@ const formatPercent = (value: number | null) => {
 }
 
 // Helper function to calculate correlation
+// Helper function to calculate correlation
 const calculateCorrelation = (data: ComparisonData[]): number | null => {
   const validPairs = data.filter(d => d.project1Value !== null && d.project2Value !== null)
   if (validPairs.length < 2) return null
