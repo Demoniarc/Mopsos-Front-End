@@ -187,19 +187,18 @@ export default function Home() {
       {/* Hero Section */}
       <div className="text-center space-y-4 py-8">
         <h1
-            className="text-3xl md:text-5xl font-bold leading-tight pb-1 bg-clip-text text-transparent"
-            style={{ backgroundImage: "linear-gradient(to right, #9796f0, #fbc7d4)" }}
+            className="text-4xl md:text-6xl font-bold leading-tight pb-2 bg-gradient-to-r from-white via-white/90 to-white/80 bg-clip-text text-transparent drop-shadow-2xl"
         >
           Crypto Social Analytics
         </h1>        
         {/* CTA Section */}
         <div className="mt-8 space-y-4">
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             Want to understand and grow your crypto community? Get your project listed on Mopsos AI and start tracking engagement across Twitter, Discord, Telegram, and Reddit.
           </p>
           
           <div className="pt-2">
-            <p className="text-base font-medium mb-4">
+            <p className="text-lg font-semibold mb-6 text-white/90">
               👉 Click below to get listed.
             </p>
           </div>
@@ -211,24 +210,19 @@ export default function Home() {
               rel="noopener noreferrer"
               className="inline-block"
             >
-              <button className="group relative px-8 py-4 text-lg font-bold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#9796f0] dark:focus:ring-[#fbc7d4]">
+              <button className="group relative px-12 py-6 text-xl font-bold text-white rounded-3xl overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/30 glass-effect glow-effect-strong">
                 
                 {/* Gradient Background */}
-                <div 
-                  className="absolute inset-0 transition-all duration-300 group-hover:opacity-90"
-                  style={{
-                    backgroundImage: "linear-gradient(to right, #9796f0, #fbc7d4)"
-                  }}
-                ></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-purple-500/30 transition-all duration-500 group-hover:from-blue-400/40 group-hover:to-purple-400/40"></div>
                 
                 {/* Animated Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
                 
                 {/* Button Text */}
                 <span className="relative z-10 flex items-center gap-2">
                   Get Listed
                   <svg 
-                    className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" 
+                    className="w-6 h-6 transition-transform duration-500 group-hover:translate-x-2" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -238,12 +232,7 @@ export default function Home() {
                 </span>
                 
                 {/* Pulse Animation */}
-                <div 
-                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-20 animate-pulse"
-                  style={{
-                    backgroundImage: "linear-gradient(to right, #9796f0, #fbc7d4)"
-                  }}
-                ></div>
+                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-30 animate-pulse bg-gradient-to-r from-white/20 to-white/10"></div>
               </button>
             </Link>
           </div>
@@ -253,27 +242,27 @@ export default function Home() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{totalProjects}</div>
-            <div className="text-sm text-muted-foreground">Projects Tracked</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold text-white mb-2">{totalProjects}</div>
+            <div className="text-sm text-white/70">Projects Tracked</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{totalPosts.toLocaleString()}</div>
-            <div className="text-sm text-muted-foreground">Total Curated Posts</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold text-white mb-2">{totalPosts.toLocaleString()}</div>
+            <div className="text-sm text-white/70">Total Curated Posts</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">24/7</div>
-            <div className="text-sm text-muted-foreground">Daily-updated Data</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold text-white mb-2">24/7</div>
+            <div className="text-sm text-white/70">Daily-updated Data</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">5+</div>
-            <div className="text-sm text-muted-foreground">Social Platforms</div>
+          <CardContent className="p-6 text-center">
+            <div className="text-3xl font-bold text-white mb-2">5+</div>
+            <div className="text-sm text-white/70">Social Platforms</div>
           </CardContent>
         </Card>
       </div>
@@ -281,12 +270,12 @@ export default function Home() {
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 h-5 w-5" />
           <Input
             placeholder="Search projects..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-12"
           />
         </div>
         <div className="flex gap-2">
@@ -324,8 +313,8 @@ export default function Home() {
       {/* Favorites Section */}
       {favoriteProjects.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Star className="h-6 w-6 text-yellow-500" />
+          <h2 className="text-3xl font-bold flex items-center gap-3 text-white">
+            <Star className="h-7 w-7 text-yellow-400 drop-shadow-lg" />
             Your Favorites
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -336,7 +325,7 @@ export default function Home() {
               return (
                 <div key={project.id} className="relative">
                   <Link href={`/dashboard/${project.id}`}>
-                    <Card className="hover:bg-accent transition-all duration-200 hover:shadow-lg border-2 border-yellow-200 dark:border-yellow-800">
+                    <Card className="transition-all duration-300 hover:shadow-2xl border-2 border-yellow-400/30 hover:border-yellow-400/50">
                       <CardHeader className="flex flex-row items-center space-x-4">
                         <div className="w-12 h-12 flex items-center justify-center">
                           <div className="w-12 h-12 rounded-full overflow-hidden">
@@ -357,7 +346,7 @@ export default function Home() {
                           </CardTitle>
                           {data?.closing_price && (
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-sm font-medium">${data.closing_price.toFixed(4)}</span>
+                              <span className="text-sm font-medium text-white/90">${data.closing_price.toFixed(4)}</span>
                               {data.return !== undefined && (
                                 <div className={`flex items-center text-xs ${data.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                   {data.return >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -371,16 +360,16 @@ export default function Home() {
                       <CardContent>
                         <dl className="grid grid-cols-3 gap-4 text-sm">
                           <div>
-                            <dt className="font-medium">Twitter</dt>
-                            <dd>{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
+                            <dt className="font-medium text-white/90">Twitter</dt>
+                            <dd className="text-white/70">{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
                           </div>
                           <div>
-                            <dt className="font-medium">Discord</dt>
-                            <dd>{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
+                            <dt className="font-medium text-white/90">Discord</dt>
+                            <dd className="text-white/70">{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
                           </div>
                           <div>
-                            <dt className="font-medium">Telegram</dt>
-                            <dd>{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
+                            <dt className="font-medium text-white/90">Telegram</dt>
+                            <dd className="text-white/70">{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
                           </div>
                         </dl>
                       </CardContent>
@@ -395,7 +384,7 @@ export default function Home() {
                       toggleFavorite(project.id)
                     }}
                   >
-                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                    <Star className="h-5 w-5 text-white/60 hover:text-yellow-400 transition-colors duration-300" />
                   </Button>
                 </div>
               )
@@ -406,9 +395,9 @@ export default function Home() {
 
       {/* All Projects Section */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-3xl font-bold text-white">
           {favoriteProjects.length > 0 ? 'All Projects' : 'Projects'}
-          <span className="text-sm font-normal text-muted-foreground ml-2">
+          <span className="text-lg font-normal text-white/70 ml-3">
             ({filteredAndSortedProjects.length} {filteredAndSortedProjects.length === 1 ? 'project' : 'projects'})
           </span>
         </h2>
@@ -420,7 +409,7 @@ export default function Home() {
             return (
               <div key={project.id} className="relative">
                 <Link href={`/dashboard/${project.id}`}>
-                  <Card className="hover:bg-accent transition-all duration-200 hover:shadow-lg">
+                  <Card className="transition-all duration-300 hover:shadow-2xl">
                     <CardHeader className="flex flex-row items-center space-x-4">
                       <div className="w-12 h-12 flex items-center justify-center">
                         <div className="w-12 h-12 rounded-full overflow-hidden">
@@ -441,7 +430,7 @@ export default function Home() {
                         </CardTitle>
                         {data?.closing_price && (
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-sm font-medium">${data.closing_price.toFixed(4)}</span>
+                            <span className="text-sm font-medium text-white/90">${data.closing_price.toFixed(4)}</span>
                             {data.return !== undefined && (
                               <div className={`flex items-center text-xs ${data.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {data.return >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -455,16 +444,16 @@ export default function Home() {
                     <CardContent>
                       <dl className="grid grid-cols-3 gap-4 text-sm">
                         <div>
-                          <dt className="font-medium">Twitter</dt>
-                          <dd>{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
+                          <dt className="font-medium text-white/90">Twitter</dt>
+                          <dd className="text-white/70">{data?.twitter_user || 0} {getUserLabel(data?.twitter_user || 0)}</dd>
                         </div>
                         <div>
-                          <dt className="font-medium">Discord</dt>
-                          <dd>{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
+                          <dt className="font-medium text-white/90">Discord</dt>
+                          <dd className="text-white/70">{data?.discord_user || 0} {getUserLabel(data?.discord_user || 0)}</dd>
                         </div>
                         <div>
-                          <dt className="font-medium">Telegram</dt>
-                          <dd>{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
+                          <dt className="font-medium text-white/90">Telegram</dt>
+                          <dd className="text-white/70">{data?.telegram_user || 0} {getUserLabel(data?.telegram_user || 0)}</dd>
                         </div>
                       </dl>
                     </CardContent>
@@ -489,7 +478,7 @@ export default function Home() {
 
       {filteredAndSortedProjects.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No projects found matching your search.</p>
+          <p className="text-white/70 text-lg">No projects found matching your search.</p>
         </div>
       )}
     </div>
