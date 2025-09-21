@@ -58,7 +58,7 @@ export default function Footer() {
               className="transition-opacity hover:opacity-80"
             >
               <img
-                src="/ocean_logo.svg"
+                src={theme === "dark" ? "/ocean_logo_light.svg" : "/ocean_logo.svg"}
                 alt="Ocean Protocol"
                 className="h-8 w-auto"
               />
@@ -97,7 +97,7 @@ export default function Footer() {
               className="transition-opacity hover:opacity-80"
             >
               <img
-                src="/ocean_logo.svg"
+                src={theme === "dark" ? "/ocean_logo_light.svg" : "/ocean_logo.svg"}
                 alt="Ocean Protocol"
                 className="h-8 w-auto"
               />
