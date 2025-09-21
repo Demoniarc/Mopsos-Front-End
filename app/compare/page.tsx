@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { supabase } from "@/lib/supabase"
 import { format } from "date-fns"
 import {
@@ -20,7 +21,7 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { ProjectSelector } from "@/components/project-selector"
 import { MetricSelector } from "@/components/metric-selector"
-import { TrendingUp, TrendingDown, BarChart3, Calendar } from "lucide-react"
+import { TrendingUp, TrendingDown, BarChart3, Calendar, BarChart2 } from "lucide-react"
 
 interface Project {
   id: string
@@ -78,7 +79,6 @@ const formatPercent = (value: number | null) => {
 
 // Helper function to calculate correlation
 // Helper function to calculate correlation
-// Helper function to calculate correlation
 const calculateCorrelation = (data: ComparisonData[]): number | null => {
   const validPairs = data.filter(d => d.project1Value !== null && d.project2Value !== null)
   if (validPairs.length < 2) return null
@@ -110,6 +110,7 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedRange, setSelectedRange] = useState("all")
+  const [dualAxisEnabled, setDualAxisEnabled] = useState(false)
 
   const timeRanges = [
     { label: "30d", days: 30 },
@@ -495,17 +496,30 @@ export default function ComparePage() {
                 <Calendar className="h-5 w-5" />
                 {availableMetrics.find(m => m.key === selectedMetric)?.name} Comparison
               </CardTitle>
-              <div className="flex gap-2">
-                {timeRanges.map((range) => (
-                  <Button
-                    key={range.label}
-                    variant={selectedRange === range.label.toLowerCase() ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedRange(range.label.toLowerCase())}
-                  >
-                    {range.label}
-                  </Button>
-                ))}
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <div className="flex items-center gap-2">
+                  <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="dual-axis" className="text-sm font-medium">
+                    Dual axis
+                  </Label>
+                  <Switch
+                    id="dual-axis"
+                    checked={dualAxisEnabled}
+                    onCheckedChange={setDualAxisEnabled}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  {timeRanges.map((range) => (
+                    <Button
+                      key={range.label}
+                      variant={selectedRange === range.label.toLowerCase() ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedRange(range.label.toLowerCase())}
+                    >
+                      {range.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -531,7 +545,19 @@ export default function ComparePage() {
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => format(new Date(value), 'MMM dd')}
                   />
-                  <YAxis tick={{ fontSize: 12 }} />
+                  <YAxis 
+                    yAxisId="left"
+                    tick={{ fontSize: 12 }} 
+                    width={35}
+                  />
+                  {dualAxisEnabled && (
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      tick={{ fontSize: 12 }}
+                      width={35}
+                    />
+                  )}
                   <ChartTooltip 
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
@@ -564,6 +590,7 @@ export default function ComparePage() {
                     dot={false}
                     name={selectedProject1?.name || 'Project 1'}
                     connectNulls={false}
+                    yAxisId="left"
                   />
                   <Line
                     type="monotone"
@@ -573,6 +600,7 @@ export default function ComparePage() {
                     dot={false}
                     name={selectedProject2?.name || 'Project 2'}
                     connectNulls={false}
+                    yAxisId={dualAxisEnabled ? "right" : "left"}
                   />
                 </LineChart>
               </ResponsiveContainer>
