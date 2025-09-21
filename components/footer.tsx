@@ -10,9 +10,9 @@ export default function Footer() {
   return (
     <footer className="border-t">
       <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          {/* Social Links */}
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col md:grid md:grid-cols-3 items-center gap-6">
+          {/* Social Links - Left column on desktop */}
+          <div className="flex items-center justify-center md:justify-start space-x-4">
             <Link 
               href="https://x.com/mopsos_ai" 
               target="_blank" 
@@ -48,8 +48,25 @@ export default function Footer() {
             </Link>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex space-x-4">
+          {/* Ocean Protocol - Center column on desktop, shown after buttons on mobile */}
+          <div className="hidden md:flex items-center justify-center space-x-2 order-3 md:order-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Powered by</span>
+            <Link 
+              href="https://oceanprotocol.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src="/ocean_logo.svg"
+                alt="Ocean Protocol"
+                className="h-8 w-auto"
+              />
+            </Link>
+          </div>
+
+          {/* Action Buttons - Right column on desktop */}
+          <div className="flex items-center justify-center md:justify-end space-x-4 order-2 md:order-3">
             <Button asChild>
               <Link 
                 href="https://forms.gle/phzyWDEfKT3QeYLL8" 
@@ -68,6 +85,23 @@ export default function Footer() {
                 Contact Us
               </Link>
             </Button>
+          </div>
+
+          {/* Ocean Protocol - Shown on mobile after buttons */}
+          <div className="md:hidden flex items-center justify-center space-x-2 order-3">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Powered by</span>
+            <Link 
+              href="https://oceanprotocol.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="transition-opacity hover:opacity-80"
+            >
+              <img
+                src="/ocean_logo.svg"
+                alt="Ocean Protocol"
+                className="h-8 w-auto"
+              />
+            </Link>
           </div>
         </div>
 
