@@ -1,6 +1,4 @@
 "use client"
-
-import { useEffect } from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -9,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { supabase } from "@/lib/supabase"
+import { useTheme } from "next-themes"
 import { TrendingUp, TrendingDown, Search, Filter, Star } from "lucide-react"
 
 interface Project {
@@ -28,6 +27,7 @@ interface ProjectData {
 }
 
 export default function Home() {
+  const { theme } = useTheme()
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsData, setProjectsData] = useState<ProjectData[]>([])
   const [searchTerm, setSearchTerm] = useState("")
@@ -39,14 +39,13 @@ export default function Home() {
 
   // Initialize Unicorn Studio
   useEffect(() => {
-    // Load Unicorn Studio script if not already loaded
     if (!window.UnicornStudio) {
       window.UnicornStudio = { isInitialized: false };
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.31/dist/unicornStudio.umd.js";
       script.onload = function() {
         if (!window.UnicornStudio.isInitialized) {
-          UnicornStudio.init();
+          window.UnicornStudio.init();
           window.UnicornStudio.isInitialized = true;
         }
       };
@@ -203,7 +202,13 @@ export default function Home() {
   return (
     <div className="space-y-8">
       {/* Unicorn Studio Animation */}
-      <div className="w-full h-screen bg-background relative overflow-hidden">
+      <div 
+        className="w-full h-screen relative overflow-hidden rounded-lg"
+        style={{ 
+          backgroundColor: theme === 'dark' ? 'hsl(var(--background))' : 'hsl(var(--background))',
+          minHeight: '100vh'
+        }}
+      >
         <div 
           data-us-project="wRhCplDNUqjI41HgWp8I" 
           className="w-full h-full"
