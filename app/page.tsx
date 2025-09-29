@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -36,15 +37,16 @@ export default function Home() {
   const [totalUsers, setTotalUsers] = useState(0)
   const [totalPosts, setTotalPosts] = useState(0);
 
-  // Load Unicorn Studio script
+  // Initialize Unicorn Studio
   useEffect(() => {
+    // Load Unicorn Studio script if not already loaded
     if (!window.UnicornStudio) {
       window.UnicornStudio = { isInitialized: false };
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.31/dist/unicornStudio.umd.js";
       script.onload = function() {
         if (!window.UnicornStudio.isInitialized) {
-          window.UnicornStudio.init();
+          UnicornStudio.init();
           window.UnicornStudio.isInitialized = true;
         }
       };
@@ -199,16 +201,16 @@ export default function Home() {
   const regularProjects = filteredAndSortedProjects.filter(project => !favorites.includes(project.id))
 
   return (
-    <div className="relative min-h-screen">
-      {/* Unicorn Studio Background */}
-      <div 
-        className="fixed inset-0 w-full h-full -z-10"
-        data-us-project="RArOaYBCSwHfAcNaQMVU"
-        style={{ width: '100%', height: '100%' }}
-      />
-      
-      {/* Main Content */}
-      <div className="relative z-10 space-y-8">
+    <div className="space-y-8">
+      {/* Unicorn Studio Animation */}
+      <div className="w-full h-screen bg-background relative overflow-hidden">
+        <div 
+          data-us-project="wRhCplDNUqjI41HgWp8I" 
+          className="w-full h-full"
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+
       {/* Hero Section */}
       <div className="text-center space-y-4 py-8">
         <h1
@@ -517,7 +519,6 @@ export default function Home() {
           <p className="text-muted-foreground">No projects found matching your search.</p>
         </div>
       )}
-    </div>
     </div>
   )
 }
