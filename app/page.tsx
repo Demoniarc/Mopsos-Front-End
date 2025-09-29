@@ -36,6 +36,22 @@ export default function Home() {
   const [totalUsers, setTotalUsers] = useState(0)
   const [totalPosts, setTotalPosts] = useState(0);
 
+  // Load Unicorn Studio script
+  useEffect(() => {
+    if (!window.UnicornStudio) {
+      window.UnicornStudio = { isInitialized: false };
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.31/dist/unicornStudio.umd.js";
+      script.onload = function() {
+        if (!window.UnicornStudio.isInitialized) {
+          window.UnicornStudio.init();
+          window.UnicornStudio.isInitialized = true;
+        }
+      };
+      (document.head || document.body).appendChild(script);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -183,7 +199,16 @@ export default function Home() {
   const regularProjects = filteredAndSortedProjects.filter(project => !favorites.includes(project.id))
 
   return (
-    <div className="space-y-8">
+    <div className="relative min-h-screen">
+      {/* Unicorn Studio Background */}
+      <div 
+        className="fixed inset-0 w-full h-full -z-10"
+        data-us-project="RArOaYBCSwHfAcNaQMVU"
+        style={{ width: '100%', height: '100%' }}
+      />
+      
+      {/* Main Content */}
+      <div className="relative z-10 space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-4 py-8">
         <h1
@@ -492,6 +517,7 @@ export default function Home() {
           <p className="text-muted-foreground">No projects found matching your search.</p>
         </div>
       )}
+    </div>
     </div>
   )
 }
