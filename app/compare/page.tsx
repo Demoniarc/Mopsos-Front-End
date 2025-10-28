@@ -635,7 +635,7 @@ export default function ComparePage() {
       )}
 
       {/* Empty State */}
-      {!selectedProject1 && !selectedProject2 && (
+      {(!selectedProject1 || !selectedProject2) && !canCompare && (
         <Card>
           <CardContent className="p-12">
             <div className="text-center space-y-4">
